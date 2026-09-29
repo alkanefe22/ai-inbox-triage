@@ -2,7 +2,7 @@
 
 An n8n workflow that reads incoming emails, has an LLM (a local model through Ollama, or Google Gemini) classify each one as **lead**, **support**, **invoice** or **spam** and extract the key fields, and then acts on the result: a reply draft and a Telegram message for leads, a Telegram alert for high-urgency support, and a row in a CSV file (and optionally Google Sheets) for every email. It is a demo for small teams or freelancers who want to see how far a self-hosted, free setup gets on inbox triage, and it comes with a reproducible evaluation on 60 synthetic emails.
 
-<!-- ![Demo: emails processed, Google Sheets rows appended, Telegram notifications](docs/demo.gif) -->
+![Demo: emails processed, Google Sheets rows appended, Telegram notifications](docs/demo.gif)
 
 ## Architecture
 
@@ -26,8 +26,9 @@ flowchart LR
     L -- "all emails done" --> CSV["output/results.csv"] --> SH["Google Sheets<br/>(optional)"] --> SUM["Run summary<br/>(webhook response)"]
 ```
 
-<!-- ![Workflow in the n8n editor](docs/screenshot-workflow.png) -->
-<!-- ![One execution in n8n](docs/screenshot-execution.png) -->
+![Workflow in the n8n editor](docs/screenshot-workflow.png)
+
+![One execution in n8n](docs/screenshot-execution.png)
 
 ## Features
 
@@ -253,7 +254,7 @@ ai-inbox-triage/
 
 - `docs/demo-raw.mp4` is sped up to fit 30 seconds (or `--speed 2 --max-seconds 30` for a fixed speed; anything longer is cut) and saved as `docs/demo.mp4` without audio.
 - `docs/demo.gif` (max 800 px wide) is made from that shortened video.
-- `docs/screenshot-*.png|jpg` are resized to 1600×1200 PNG, keeping the aspect ratio and padding with white.
+- `docs/screenshot-*.png|jpg` are resized to 1600×1200 PNG, keeping the aspect ratio and padding with the screenshot's own background colour.
 
 Only the GIF and the screenshots are committed; both MP4 files are git-ignored.
 

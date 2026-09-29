@@ -2,7 +2,8 @@
 // Prepares demo media in docs/ with ffmpeg:
 //   - docs/demo-raw.mp4          -> docs/demo.mp4 (sped up / trimmed to the target length, no audio)
 //   - docs/demo.mp4              -> docs/demo.gif (max 800 px wide, kept under ~8 MB)
-//   - docs/screenshot-*.png|jpg  -> 1600x1200 PNG, aspect ratio kept, padded with white
+//   - docs/screenshot-*.png|jpg  -> 1600x1200 PNG, aspect ratio kept, padded with the image's own
+//                                   corner colour (the dark n8n background; #1f1f1f as fallback)
 //
 //   npm run media                                  (auto speed so the video fits in 30 s)
 //   npm run media -- --speed 2 --max-seconds 30    (fixed 2x; anything past 30 s is cut)
@@ -18,6 +19,7 @@ const { ROOT } = require('./lib/env');
 const GIF_MAX_BYTES = 8 * 1024 * 1024;
 const GIF_ATTEMPTS = [[10, 800], [8, 720], [6, 640]]; // [fps, max width]
 const SHOT_W = 1600, SHOT_H = 1200;
+const PAD_FALLBACK = '0x1f1f1f';
 
 function parseArgs(argv) {
   const a = { dir: 'docs', speed: null, maxSeconds: 30 };
@@ -55,6 +57,13 @@ function probe(file) {
   const out = tool('ffprobe', ['-v', 'error', '-select_streams', 'v:0', '-show_entries', 'stream=width,height:format=duration', '-of', 'json', file]);
   const j = JSON.parse(out);
   return { w: j.streams[0].width, h: j.streams[0].height, duration: Number(j.format.duration) || 0 };
+}
+
+// Colour of the top-left pixel, used for the padding so it blends with the screenshot.
+function cornerColor(file) {
+  const r = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-i', file, '-vf', 'crop=1:1:0:0,format=rgb24', '-frames:v', '1', '-f', 'rawvideo', '-']);
+  if (r.status !== 0 || !r.stdout || r.stdout.length < 3) return PAD_FALLBACK;
+  return '0x' + [...r.stdout.subarray(0, 3)].map((b) => b.toString(16).padStart(2, '0')).join('');
 }
 
 const mb = (b) => (b / 1024 / 1024).toFixed(1) + ' MB';
@@ -114,10 +123,11 @@ function fixScreenshots(dir) {
     const { w, h } = probe(src);
     if (/\.png$/i.test(f) && w === SHOT_W && h === SHOT_H) { console.log(`shots  : ${f} already ${SHOT_W}x${SHOT_H}`); continue; }
     const tmp = out + '.tmp.png';
-    const filter = `scale=${SHOT_W}:${SHOT_H}:force_original_aspect_ratio=decrease:flags=lanczos,pad=${SHOT_W}:${SHOT_H}:(ow-iw)/2:(oh-ih)/2:color=white`;
+    const pad = cornerColor(src);
+    const filter = `scale=${SHOT_W}:${SHOT_H}:force_original_aspect_ratio=decrease:flags=lanczos,pad=${SHOT_W}:${SHOT_H}:(ow-iw)/2:(oh-ih)/2:color=${pad}`;
     tool('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-i', src, '-vf', filter, '-frames:v', '1', tmp]);
     fs.renameSync(tmp, out);
-    console.log(`shots  : ${f} ${w}x${h} -> ${path.basename(out)} ${SHOT_W}x${SHOT_H}`);
+    console.log(`shots  : ${f} ${w}x${h} -> ${path.basename(out)} ${SHOT_W}x${SHOT_H}, padding #${pad.slice(2)}`);
   }
 }
 

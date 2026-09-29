@@ -12,6 +12,9 @@ docs/demo-raw.mp4
 docs/demo.mp4
 docs/*.tmp.*
 
+# Paid Gumroad package (built locally, never committed)
+gumroad/
+
 # Dependencies
 node_modules/
 

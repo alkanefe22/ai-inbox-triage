@@ -1,5 +1,7 @@
 # ai-inbox-triage
 
+> Want the ready-to-import version with Gmail, Sheets and Telegram preconfigured, extra prompt variants and a setup guide? → [AI Inbox Triage Pro on Gumroad](https://alkanefex.gumroad.com/l/ai-inbox-triage-pro)
+
 An n8n workflow that reads incoming emails, has an LLM (a local model through Ollama, or Google Gemini) classify each one as **lead**, **support**, **invoice** or **spam** and extract the key fields, and then acts on the result: a reply draft and a Telegram message for leads, a Telegram alert for high-urgency support, and a row in a CSV file (and optionally Google Sheets) for every email. It is a demo for small teams or freelancers who want to see how far a self-hosted, free setup gets on inbox triage, and it comes with a reproducible evaluation on 60 synthetic emails.
 
 ![Demo: emails processed, Google Sheets rows appended, Telegram notifications](docs/demo.gif)

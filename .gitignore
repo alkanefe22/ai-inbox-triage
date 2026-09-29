@@ -12,6 +12,21 @@ docs/demo-raw.mp4
 docs/demo.mp4
 docs/*.tmp.*
 
+# Dependencies
+node_modules/
+
+# Key and credential files (never commit these)
+*.pem
+*.key
+*.p12
+*.pfx
+*-key.json
+*_key.json
+*service-account*.json
+*service_account*.json
+credentials*.json
+client_secret*.json
+
 # OS
 .DS_Store
 Thumbs.db

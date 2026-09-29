@@ -16,7 +16,7 @@ const { spawnSync } = require('child_process');
 const { webhookUrl } = require('./lib/env');
 
 const ROOT = path.resolve(__dirname, '..');
-const DATA_BASE_COMMIT = 'dd597e4'; // data/ must match this commit
+const DATA_BASE_COMMIT = '77ee88d'; // data/ must match this commit
 const P = (...p) => path.join(ROOT, ...p);
 const PROVIDERS = ['ollama', 'gemini'];
 const BENCHMARKED = ['ollama'];

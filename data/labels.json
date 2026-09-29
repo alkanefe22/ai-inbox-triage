@@ -1,0 +1,650 @@
+[
+  {
+    "id": "e001",
+    "category": "support",
+    "fields": {
+      "customer": "Sam Rivera",
+      "topic": "how to reset two-factor authentication",
+      "urgency": "low"
+    },
+    "tags": []
+  },
+  {
+    "id": "e002",
+    "category": "support",
+    "fields": {
+      "customer": "Oscar Lindqvist",
+      "topic": "Google Sheets integration target specific tab",
+      "urgency": "low"
+    },
+    "tags": []
+  },
+  {
+    "id": "e003",
+    "category": "invoice",
+    "fields": {
+      "vendor": "Hartley Legal LLP",
+      "invoice_number": "2026/0387",
+      "amount": 2160,
+      "currency": "GBP",
+      "due_date": "2026-10-03"
+    },
+    "tags": []
+  },
+  {
+    "id": "e004",
+    "category": "support",
+    "fields": {
+      "customer": "Chloe Nakamura",
+      "topic": "dark mode availability",
+      "urgency": "low"
+    },
+    "tags": []
+  },
+  {
+    "id": "e005",
+    "category": "invoice",
+    "fields": {
+      "vendor": "Copperleaf Catering",
+      "invoice_number": "CC-1893",
+      "amount": 1042.5,
+      "currency": "EUR",
+      "due_date": "2026-10-18"
+    },
+    "tags": []
+  },
+  {
+    "id": "e006",
+    "category": "support",
+    "fields": {
+      "customer": "Anika Patel",
+      "topic": "API returning 429 below documented limit",
+      "urgency": "medium"
+    },
+    "tags": []
+  },
+  {
+    "id": "e007",
+    "category": "lead",
+    "fields": {
+      "name": "Sophie Delacroix",
+      "company": "Maison Orme",
+      "need": "sync inventory across web shop and marketplaces",
+      "budget": "€6,500",
+      "timeline": "live by mid-November"
+    },
+    "tags": []
+  },
+  {
+    "id": "e008",
+    "category": "lead",
+    "fields": {
+      "name": "Aiko Tanaka",
+      "company": "Sakura Lane Tea Co.",
+      "need": "auto-triage customer support emails",
+      "budget": "$9,000",
+      "timeline": "end of October"
+    },
+    "tags": []
+  },
+  {
+    "id": "e009",
+    "category": "spam",
+    "fields": {},
+    "tags": [
+      "ambiguous"
+    ]
+  },
+  {
+    "id": "e010",
+    "category": "support",
+    "fields": {
+      "customer": "Mei Lin Chen",
+      "topic": "GDPR personal data deletion request",
+      "urgency": "medium"
+    },
+    "tags": []
+  },
+  {
+    "id": "e011",
+    "category": "spam",
+    "fields": {},
+    "tags": []
+  },
+  {
+    "id": "e012",
+    "category": "lead",
+    "fields": {
+      "name": "Emre Yıldız",
+      "company": "Kordon Tekstil",
+      "need": "automated WhatsApp order status notifications",
+      "budget": "30.000 TL civarı",
+      "timeline": "Ekim sonuna kadar"
+    },
+    "tags": [
+      "mixed_language"
+    ]
+  },
+  {
+    "id": "e013",
+    "category": "invoice",
+    "fields": {
+      "vendor": "Granite Peak Consulting",
+      "invoice_number": "GPC-0098",
+      "amount": 9800,
+      "currency": "USD",
+      "due_date": "2026-10-28"
+    },
+    "tags": []
+  },
+  {
+    "id": "e014",
+    "category": "support",
+    "fields": {
+      "customer": "Laura Svensson",
+      "topic": "how to change account email address",
+      "urgency": "low"
+    },
+    "tags": [
+      "prompt_injection"
+    ]
+  },
+  {
+    "id": "e015",
+    "category": "spam",
+    "fields": {},
+    "tags": []
+  },
+  {
+    "id": "e016",
+    "category": "lead",
+    "fields": {
+      "name": "Grace Liang",
+      "company": "Quillfield Studio",
+      "need": "upgrade to 40-seat annual plan with SSO",
+      "budget": "$15k",
+      "timeline": "by November 1"
+    },
+    "tags": [
+      "ambiguous"
+    ]
+  },
+  {
+    "id": "e017",
+    "category": "support",
+    "fields": {
+      "customer": "Isabel Fontaine",
+      "topic": "scheduled reports sent to wrong recipients",
+      "urgency": "high"
+    },
+    "tags": []
+  },
+  {
+    "id": "e018",
+    "category": "lead",
+    "fields": {
+      "name": "Rafael Moreno",
+      "company": "Tidewater Realty",
+      "need": "connect website listing forms to CRM",
+      "budget": "$3,000-4,000",
+      "timeline": "in about two weeks"
+    },
+    "tags": [
+      "ambiguous"
+    ]
+  },
+  {
+    "id": "e019",
+    "category": "invoice",
+    "fields": {
+      "vendor": "Redwood Facilities",
+      "invoice_number": null,
+      "amount": null,
+      "currency": null,
+      "due_date": "2026-10-20"
+    },
+    "tags": [
+      "missing_info"
+    ]
+  },
+  {
+    "id": "e020",
+    "category": "spam",
+    "fields": {},
+    "tags": [
+      "ambiguous"
+    ]
+  },
+  {
+    "id": "e021",
+    "category": "spam",
+    "fields": {},
+    "tags": []
+  },
+  {
+    "id": "e022",
+    "category": "spam",
+    "fields": {},
+    "tags": []
+  },
+  {
+    "id": "e023",
+    "category": "lead",
+    "fields": {
+      "name": "Tomasz Wierzbicki",
+      "company": "Fernhollow Logistics",
+      "need": "integrate route planner with warehouse system",
+      "budget": null,
+      "timeline": "next month"
+    },
+    "tags": [
+      "missing_info"
+    ]
+  },
+  {
+    "id": "e024",
+    "category": "lead",
+    "fields": {
+      "name": "Marcus Webb",
+      "company": "Webb & Sons Hardware",
+      "need": "auto-generate purchase orders on low stock",
+      "budget": "$4,000-5,000",
+      "timeline": "next 2-3 months"
+    },
+    "tags": []
+  },
+  {
+    "id": "e025",
+    "category": "invoice",
+    "fields": {
+      "vendor": "Cobalt Cloud Hosting",
+      "invoice_number": "INV-2026-0912",
+      "amount": 1250.5,
+      "currency": "USD",
+      "due_date": "2026-10-15"
+    },
+    "tags": []
+  },
+  {
+    "id": "e026",
+    "category": "support",
+    "fields": {
+      "customer": "George Whitfield",
+      "topic": "cancel subscription at end of term",
+      "urgency": "medium"
+    },
+    "tags": []
+  },
+  {
+    "id": "e027",
+    "category": "invoice",
+    "fields": {
+      "vendor": "Harrow & Finch Accounting",
+      "invoice_number": "HF/26/118",
+      "amount": 780,
+      "currency": "GBP",
+      "due_date": "2026-10-10"
+    },
+    "tags": []
+  },
+  {
+    "id": "e028",
+    "category": "support",
+    "fields": {
+      "customer": "Ben Hollis",
+      "topic": "CSV export ignores date format setting",
+      "urgency": "medium"
+    },
+    "tags": []
+  },
+  {
+    "id": "e029",
+    "category": "support",
+    "fields": {
+      "customer": null,
+      "topic": "new order webhook stopped firing",
+      "urgency": "medium"
+    },
+    "tags": [
+      "missing_info"
+    ]
+  },
+  {
+    "id": "e030",
+    "category": "invoice",
+    "fields": {
+      "vendor": "Studio Veldt Design",
+      "invoice_number": "SV-0457",
+      "amount": 3400,
+      "currency": "EUR",
+      "due_date": "2026-10-01"
+    },
+    "tags": []
+  },
+  {
+    "id": "e031",
+    "category": "spam",
+    "fields": {},
+    "tags": []
+  },
+  {
+    "id": "e032",
+    "category": "spam",
+    "fields": {},
+    "tags": []
+  },
+  {
+    "id": "e033",
+    "category": "support",
+    "fields": {
+      "customer": "Olivia Carter",
+      "topic": "entire team unable to log in",
+      "urgency": "high"
+    },
+    "tags": []
+  },
+  {
+    "id": "e034",
+    "category": "support",
+    "fields": {
+      "customer": "Victor Almeida",
+      "topic": "refund duplicate charge on invoice",
+      "urgency": "medium"
+    },
+    "tags": [
+      "ambiguous"
+    ]
+  },
+  {
+    "id": "e035",
+    "category": "support",
+    "fields": {
+      "customer": "Burak Demir",
+      "topic": "Telegram notifications not arriving",
+      "urgency": "medium"
+    },
+    "tags": [
+      "mixed_language"
+    ]
+  },
+  {
+    "id": "e036",
+    "category": "lead",
+    "fields": {
+      "name": "Jonathan Pryce",
+      "company": "Alderbank Insurance",
+      "need": "automated claims document classification and routing",
+      "budget": "£40,000-55,000",
+      "timeline": "within 4 months of contract signature"
+    },
+    "tags": []
+  },
+  {
+    "id": "e037",
+    "category": "invoice",
+    "fields": {
+      "vendor": "Summit Office Supply",
+      "invoice_number": "SOS-55120",
+      "amount": 389.99,
+      "currency": "USD",
+      "due_date": "2026-10-02"
+    },
+    "tags": [
+      "ambiguous"
+    ]
+  },
+  {
+    "id": "e038",
+    "category": "spam",
+    "fields": {},
+    "tags": []
+  },
+  {
+    "id": "e039",
+    "category": "invoice",
+    "fields": {
+      "vendor": "Brightline Print Co.",
+      "invoice_number": "BP-7781",
+      "amount": 642,
+      "currency": "USD",
+      "due_date": null
+    },
+    "tags": [
+      "missing_info"
+    ]
+  },
+  {
+    "id": "e040",
+    "category": "spam",
+    "fields": {},
+    "tags": [
+      "mixed_language"
+    ]
+  },
+  {
+    "id": "e041",
+    "category": "invoice",
+    "fields": {
+      "vendor": "Ege Ofis Malzemeleri",
+      "invoice_number": "EOM-2026-331",
+      "amount": 14750.75,
+      "currency": "TRY",
+      "due_date": "2026-10-05"
+    },
+    "tags": [
+      "mixed_language"
+    ]
+  },
+  {
+    "id": "e042",
+    "category": "invoice",
+    "fields": {
+      "vendor": "Nordvik Translations",
+      "invoice_number": null,
+      "amount": 1180,
+      "currency": "EUR",
+      "due_date": "2026-10-20"
+    },
+    "tags": [
+      "missing_info"
+    ]
+  },
+  {
+    "id": "e043",
+    "category": "support",
+    "fields": {
+      "customer": null,
+      "topic": "unspecified error after update",
+      "urgency": "medium"
+    },
+    "tags": [
+      "missing_info"
+    ]
+  },
+  {
+    "id": "e044",
+    "category": "invoice",
+    "fields": {
+      "vendor": "Lumen Photography",
+      "invoice_number": "LP-2026-044",
+      "amount": 450,
+      "currency": "GBP",
+      "due_date": "2026-10-12"
+    },
+    "tags": [
+      "ambiguous"
+    ]
+  },
+  {
+    "id": "e045",
+    "category": "support",
+    "fields": {
+      "customer": "Frank Delaney",
+      "topic": "account locked after phone change 2FA",
+      "urgency": "high"
+    },
+    "tags": [
+      "ambiguous"
+    ]
+  },
+  {
+    "id": "e046",
+    "category": "invoice",
+    "fields": {
+      "vendor": "Vertex IT Services",
+      "invoice_number": "VX-3309",
+      "amount": 2875,
+      "currency": "USD",
+      "due_date": "2026-10-08"
+    },
+    "tags": [
+      "prompt_injection"
+    ]
+  },
+  {
+    "id": "e047",
+    "category": "lead",
+    "fields": {
+      "name": "Nadia Hassan",
+      "company": "Corvid Marketing",
+      "need": "white-label lead scoring automation for agency clients",
+      "budget": "$10,000",
+      "timeline": "in 6-8 weeks"
+    },
+    "tags": []
+  },
+  {
+    "id": "e048",
+    "category": "lead",
+    "fields": {
+      "name": "Kevin Mbeki",
+      "company": "Mbeki Fitness",
+      "need": "route signups to spreadsheet and send welcome text",
+      "budget": "under $2k",
+      "timeline": "ASAP"
+    },
+    "tags": []
+  },
+  {
+    "id": "e049",
+    "category": "lead",
+    "fields": {
+      "name": "Helena Brandt",
+      "company": "Kestrel Analytics",
+      "need": "build nightly multi-source sales data pipeline",
+      "budget": "€20,000",
+      "timeline": "within 6 weeks"
+    },
+    "tags": [
+      "prompt_injection"
+    ]
+  },
+  {
+    "id": "e050",
+    "category": "lead",
+    "fields": {
+      "name": "Daniel Okafor",
+      "company": "Brightmoor Dental Group",
+      "need": "AI chatbot for booking dental appointments",
+      "budget": "€12,000",
+      "timeline": "before end of Q4"
+    },
+    "tags": []
+  },
+  {
+    "id": "e051",
+    "category": "spam",
+    "fields": {},
+    "tags": []
+  },
+  {
+    "id": "e052",
+    "category": "invoice",
+    "fields": {
+      "vendor": "Atelier Brun",
+      "invoice_number": "AB-2026-212",
+      "amount": 5320,
+      "currency": "EUR",
+      "due_date": "2026-10-15"
+    },
+    "tags": []
+  },
+  {
+    "id": "e053",
+    "category": "spam",
+    "fields": {},
+    "tags": [
+      "prompt_injection"
+    ]
+  },
+  {
+    "id": "e054",
+    "category": "spam",
+    "fields": {},
+    "tags": []
+  },
+  {
+    "id": "e055",
+    "category": "lead",
+    "fields": {
+      "name": null,
+      "company": "Pinecrest Events",
+      "need": "automate RSVP tracking and reminder emails",
+      "budget": "£3,000",
+      "timeline": null
+    },
+    "tags": [
+      "missing_info"
+    ]
+  },
+  {
+    "id": "e056",
+    "category": "lead",
+    "fields": {
+      "name": "Maya Thornton",
+      "company": "Larkspur Ceramics",
+      "need": "automate order confirmation and shipping emails",
+      "budget": "$5,000-8,000",
+      "timeline": "within 3 weeks"
+    },
+    "tags": []
+  },
+  {
+    "id": "e057",
+    "category": "spam",
+    "fields": {},
+    "tags": []
+  },
+  {
+    "id": "e058",
+    "category": "spam",
+    "fields": {},
+    "tags": []
+  },
+  {
+    "id": "e059",
+    "category": "lead",
+    "fields": {
+      "name": "Priya",
+      "company": null,
+      "need": "custom reporting dashboard",
+      "budget": null,
+      "timeline": null
+    },
+    "tags": [
+      "missing_info"
+    ]
+  },
+  {
+    "id": "e060",
+    "category": "invoice",
+    "fields": {
+      "vendor": "Pixelforge Software",
+      "invoice_number": "PF-99214",
+      "amount": 49,
+      "currency": "USD",
+      "due_date": "2026-10-01"
+    },
+    "tags": []
+  }
+]

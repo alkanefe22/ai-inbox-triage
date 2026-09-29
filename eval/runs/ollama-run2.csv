@@ -1,0 +1,61 @@
+﻿id,provider,model,status,attempts,error,category,name,company,need,budget,timeline,customer,topic,urgency,vendor,invoice_number,amount,currency,due_date,reply_draft,notified,latency_ms,processed_at
+e001,ollama,qwen3.5:9b,ok,1,,support,,,,,,Sam Rivera,reset 2FA on account with new phone,medium,,,,,,,FALSE,1472,2026-09-29T12:59:30.253+03:00
+e002,ollama,qwen3.5:9b,ok,1,,support,,,,,,Oscar Lindqvist,Google Sheets integration tab writing,low,,,,,,,FALSE,1580,2026-09-29T12:59:31.839+03:00
+e003,ollama,qwen3.5:9b,ok,1,,invoice,,,,,,,,,Hartley Legal LLP,2026/0387,2160,GBP,2026-10-03,,FALSE,1659,2026-09-29T12:59:33.503+03:00
+e004,ollama,qwen3.5:9b,ok,1,,support,,,,,,Chloe Nakamura,Request for dark mode in dashboard,low,,,,,,,FALSE,1448,2026-09-29T12:59:34.956+03:00
+e005,ollama,qwen3.5:9b,ok,1,,invoice,,,,,,,,,Copperleaf Catering,CC-1893,1042.5,EUR,2026-10-18,,FALSE,1638,2026-09-29T12:59:36.599+03:00
+e006,ollama,qwen3.5:9b,ok,1,,support,,,,,,Anika Patel,API rate limits causing integration failures,medium,,,,,,,FALSE,1556,2026-09-29T12:59:38.161+03:00
+e007,ollama,qwen3.5:9b,ok,1,,lead,Sophie Delacroix,Maison Orme,Sync inventory between web shop and marketplaces with,"€6,500",live by mid-November,,,,,,,,,,FALSE,1650,2026-09-29T12:59:39.816+03:00
+e008,ollama,qwen3.5:9b,ok,1,,lead,Aiko Tanaka,Sakura Lane Tea Co.,Customer support email auto-triage project,"$9,000",end of October,,,,,,,,,,FALSE,1621,2026-09-29T12:59:41.442+03:00
+e009,ollama,qwen3.5:9b,ok,1,,spam,,,,,,,,,,,,,,,FALSE,1283,2026-09-29T12:59:42.730+03:00
+e010,ollama,qwen3.5:9b,ok,1,,support,,,,,,Mei Lin Chen,GDPR data deletion request,medium,,,,,,,FALSE,1475,2026-09-29T12:59:44.210+03:00
+e011,ollama,qwen3.5:9b,ok,1,,spam,,,,,,,,,,,,,,,FALSE,1297,2026-09-29T12:59:45.511+03:00
+e012,ollama,qwen3.5:9b,ok,1,,lead,Emre Yıldız,Kordon Tekstil,Automated WhatsApp notifications for e-commerce orders,30.000 TL,End of October,,,,,,,,,,FALSE,1640,2026-09-29T12:59:47.156+03:00
+e013,ollama,qwen3.5:9b,ok,1,,invoice,,,,,,,,,Granite Peak Consulting,GPC-0098,9800,USD,2026-10-28,,FALSE,1546,2026-09-29T12:59:48.705+03:00
+e014,ollama,qwen3.5:9b,ok,1,,support,,,,,,Laura Svensson,How to change account email address,low,,,,,,,FALSE,1456,2026-09-29T12:59:50.166+03:00
+e015,ollama,qwen3.5:9b,ok,1,,spam,,,,,,,,,,,,,,,FALSE,1257,2026-09-29T12:59:51.428+03:00
+e016,ollama,qwen3.5:9b,ok,1,,lead,Grace Liang,Quillfield Studio,Pricing for 40 seats with SSO on annual,$15k,November 1,,,,,,,,,,FALSE,1548,2026-09-29T12:59:52.981+03:00
+e017,ollama,qwen3.5:9b,ok,1,,support,,,,,,Isabel Fontaine,Scheduled reports sent to wrong recipients,high,,,,,,,FALSE,1516,2026-09-29T12:59:54.503+03:00
+e018,ollama,qwen3.5:9b,ok,1,,lead,Rafael Moreno,Tidewater Realty,CRM integration service for listing site forms,"$3,000-4,000",two weeks,,,,,,,,,,FALSE,1563,2026-09-29T12:59:56.071+03:00
+e019,ollama,qwen3.5:9b,ok,1,,invoice,,,,,,,,,Redwood Facilities,,,,2026-10-20,,FALSE,1451,2026-09-29T12:59:57.526+03:00
+e020,ollama,qwen3.5:9b,ok,1,,invoice,,,,,,,,,Accounts,88213,,,,,FALSE,1365,2026-09-29T12:59:58.896+03:00
+e021,ollama,qwen3.5:9b,ok,1,,spam,,,,,,,,,,,,,,,FALSE,1286,2026-09-29T13:00:00.187+03:00
+e022,ollama,qwen3.5:9b,ok,1,,spam,,,,,,,,,,,,,,,FALSE,1310,2026-09-29T13:00:01.506+03:00
+e023,ollama,qwen3.5:9b,ok,1,,lead,Tomasz Wierzbicki,Fernhollow Logistics,Connect route planning tool with warehouse system for,,next month,,,,,,,,,,FALSE,1631,2026-09-29T13:00:03.142+03:00
+e024,ollama,qwen3.5:9b,ok,1,,lead,Marcus Webb,Webb & Sons Hardware,Automated purchase orders for low stock,"$4,000-5,000",2-3 months,,,,,,,,,,FALSE,1672,2026-09-29T13:00:04.818+03:00
+e025,ollama,qwen3.5:9b,ok,1,,invoice,,,,,,,,,Cobalt Cloud Hosting,INV-2026-0912,1250.5,USD,2026-10-15,,FALSE,1679,2026-09-29T13:00:06.503+03:00
+e026,ollama,qwen3.5:9b,ok,1,,support,,,,,,George Whitfield,Cancel subscription at end of term,low,,,,,,,FALSE,1483,2026-09-29T13:00:07.993+03:00
+e027,ollama,qwen3.5:9b,ok,1,,invoice,,,,,,,,,Harrow & Finch Accounting,HF/26/118,780,GBP,2026-10-10,,FALSE,1622,2026-09-29T13:00:09.624+03:00
+e028,ollama,qwen3.5:9b,ok,1,,support,,,,,,Ben Hollis,CSV export date format mismatch,low,,,,,,,FALSE,1480,2026-09-29T13:00:11.108+03:00
+e029,ollama,qwen3.5:9b,ok,1,,support,,,,,,,webhook not firing,medium,,,,,,,FALSE,1380,2026-09-29T13:00:12.492+03:00
+e030,ollama,qwen3.5:9b,ok,1,,invoice,,,,,,,,,Studio Veldt,SV-0457,3400,EUR,2026-10-01,,FALSE,1655,2026-09-29T13:00:14.151+03:00
+e031,ollama,qwen3.5:9b,ok,1,,spam,,,,,,,,,,,,,,,FALSE,70056,2026-09-29T13:01:24.211+03:00
+e032,ollama,qwen3.5:9b,ok,1,,spam,,,,,,,,,,,,,,,FALSE,1294,2026-09-29T13:01:25.515+03:00
+e033,ollama,qwen3.5:9b,ok,1,,support,,,,,,Olivia Carter,Users cannot log in due to invalid session,high,,,,,,,FALSE,1491,2026-09-29T13:01:27.011+03:00
+e034,ollama,qwen3.5:9b,ok,1,,support,,,,,,Victor Almeida,duplicate charge on invoice INV-20931,medium,,,,,,,FALSE,1768,2026-09-29T13:01:28.783+03:00
+e035,ollama,qwen3.5:9b,ok,1,,support,,,,,,Burak Demir,Telegram notifications not working,medium,,,,,,,FALSE,1456,2026-09-29T13:01:30.244+03:00
+e036,ollama,qwen3.5:9b,ok,1,,lead,Jonathan Pryce,Alderbank Insurance,Intelligent document intake solution for claims processing,"£40,000-55,000",4 months,,,,,,,,,,FALSE,1670,2026-09-29T13:01:31.920+03:00
+e037,ollama,qwen3.5:9b,ok,1,,invoice,,,,,,,,,Summit Office Supply,SOS-55120,389.99,USD,2026-10-02,,FALSE,1609,2026-09-29T13:01:33.533+03:00
+e038,ollama,qwen3.5:9b,ok,1,,spam,,,,,,,,,,,,,,,FALSE,1243,2026-09-29T13:01:34.780+03:00
+e039,ollama,qwen3.5:9b,ok,1,,invoice,,,,,,,,,Brightline Print Co.,BP-7781,642,USD,,,FALSE,1474,2026-09-29T13:01:36.259+03:00
+e040,ollama,qwen3.5:9b,ok,1,,spam,,,,,,,,,,,,,,,FALSE,1258,2026-09-29T13:01:37.523+03:00
+e041,ollama,qwen3.5:9b,ok,1,,invoice,,,,,,,,,Ege Ofis Malzemeleri,EOM-2026-331,14750.75,TRY,2026-10-05,,FALSE,1717,2026-09-29T13:01:39.248+03:00
+e042,ollama,qwen3.5:9b,ok,1,,invoice,,,,,,,,,Nordvik Translations,,1180,EUR,2026-10-20,,FALSE,1521,2026-09-29T13:01:40.774+03:00
+e043,ollama,qwen3.5:9b,ok,1,,support,,,,,,,something broke after the update,medium,,,,,,,FALSE,1428,2026-09-29T13:01:42.206+03:00
+e044,ollama,qwen3.5:9b,ok,1,,invoice,,,,,,,,,Lumen Photography,LP-2026-044,450,GBP,2026-10-12,,FALSE,1679,2026-09-29T13:01:43.890+03:00
+e045,ollama,qwen3.5:9b,ok,1,,support,,,,,,Frank Delaney,Account locked after phone change,high,,,,,,,FALSE,1510,2026-09-29T13:01:45.404+03:00
+e046,ollama,qwen3.5:9b,ok,1,,invoice,,,,,,,,,Vertex IT Services,VX-3309,2875,USD,2026-10-08,,FALSE,1624,2026-09-29T13:01:47.032+03:00
+e047,ollama,qwen3.5:9b,ok,1,,lead,Nadia Hassan,Corvid Marketing,White-label lead qualification automation for resale,"$10,000",6-8 weeks,,,,,,,,,,FALSE,1621,2026-09-29T13:01:48.662+03:00
+e048,ollama,qwen3.5:9b,ok,1,,lead,Kevin Mbeki,Mbeki Fitness,Automate member signups to spreadsheet and send welcome,under $2k,ASAP,,,,,,,,,,FALSE,1609,2026-09-29T13:01:50.276+03:00
+e049,ollama,qwen3.5:9b,ok,1,,lead,Helena Brandt,Kestrel Analytics,nightly data pipeline for sales data,"€20,000",6 weeks,,,,,,,,,,FALSE,1647,2026-09-29T13:01:51.929+03:00
+e050,ollama,qwen3.5:9b,ok,1,,lead,Dr. Daniel Okafor,Brightmoor Dental Group,"AI chatbot to book, move and cancel appointments","€12,000",before end of Q4,,,,,,,,,,FALSE,1746,2026-09-29T13:01:53.680+03:00
+e051,ollama,qwen3.5:9b,ok,1,,spam,,,,,,,,,,,,,,,FALSE,1336,2026-09-29T13:01:55.023+03:00
+e052,ollama,qwen3.5:9b,ok,1,,invoice,,,,,,,,,Atelier Brun,AB-2026-212,5320,EUR,2026-10-15,,FALSE,1696,2026-09-29T13:01:56.723+03:00
+e053,ollama,qwen3.5:9b,ok,1,,spam,,,,,,,,,,,,,,,FALSE,1370,2026-09-29T13:01:58.098+03:00
+e054,ollama,qwen3.5:9b,ok,1,,spam,,,,,,,,,,,,,,,FALSE,1337,2026-09-29T13:01:59.441+03:00
+e055,ollama,qwen3.5:9b,ok,1,,lead,The Pinecrest Events team,Pinecrest Events,Automatic RSVP tracking and reminders for corporate retreats,"£3,000",,,,,,,,,,,FALSE,1597,2026-09-29T13:02:01.042+03:00
+e056,ollama,qwen3.5:9b,ok,1,,lead,Maya Thornton,Larkspur Ceramics,Automate order confirmation and shipping emails end to,"$5,000-8,000",within 3 weeks,,,,,,,,,,FALSE,1702,2026-09-29T13:02:02.748+03:00
+e057,ollama,qwen3.5:9b,ok,1,,spam,,,,,,,,,,,,,,,FALSE,1261,2026-09-29T13:02:04.014+03:00
+e058,ollama,qwen3.5:9b,ok,1,,spam,,,,,,,,,,,,,,,FALSE,1288,2026-09-29T13:02:05.306+03:00
+e059,ollama,qwen3.5:9b,ok,1,,lead,Priya,,custom reporting dashboards,,,,,,,,,,,,FALSE,1332,2026-09-29T13:02:06.644+03:00
+e060,ollama,qwen3.5:9b,ok,1,,invoice,,,,,,,,,Pixelforge Software,PF-99214,49,USD,2026-10-01,,FALSE,1562,2026-09-29T13:02:08.210+03:00

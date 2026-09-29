@@ -7,6 +7,11 @@
 output/*
 !output/.gitkeep
 
+# Demo videos (only docs/demo.gif is committed; the MP4 is shared separately)
+docs/demo-raw.mp4
+docs/demo.mp4
+docs/*.tmp.*
+
 # OS
 .DS_Store
 Thumbs.db

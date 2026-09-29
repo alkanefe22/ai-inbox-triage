@@ -2,10 +2,11 @@ services:
   n8n:
     # Pinned to the current "stable" release (not latest).
     image: docker.n8n.io/n8nio/n8n:2.41.3
-    container_name: ai-inbox-triage-n8n
+    # Defaults keep the original names; COMPOSE_PROJECT_NAME and N8N_HOST_PORT allow a second instance.
+    container_name: ${COMPOSE_PROJECT_NAME:-ai-inbox-triage}-n8n
     restart: unless-stopped
     ports:
-      - "5678:5678"
+      - "${N8N_HOST_PORT:-5678}:5678"
     extra_hosts:
       - "host.docker.internal:host-gateway"
     env_file:
@@ -26,4 +27,4 @@ services:
 
 volumes:
   n8n_data:
-    name: ai-inbox-triage_n8n_data
+    name: ${COMPOSE_PROJECT_NAME:-ai-inbox-triage}_n8n_data

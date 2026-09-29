@@ -13,6 +13,7 @@ const fs = require('fs');
 const path = require('path');
 const http = require('http');
 const { spawnSync } = require('child_process');
+const { webhookUrl } = require('./lib/env');
 
 const ROOT = path.resolve(__dirname, '..');
 const DATA_BASE_COMMIT = 'dd597e4'; // data/ must match this commit
@@ -35,7 +36,7 @@ const STOPWORDS = new Set(('a an and are as at be by for from has have i in into
 
 // ---------------------------------------------------------------- args
 function parseArgs(argv) {
-  const a = { provider: 'all', runs: 3, url: 'http://localhost:5678/webhook/inbox-triage', label: null };
+  const a = { provider: 'all', runs: 3, url: webhookUrl(), label: null };
   for (let i = 0; i < argv.length; i++) {
     const k = argv[i], v = argv[i + 1];
     if (k === '--provider') { a.provider = v; i++; }

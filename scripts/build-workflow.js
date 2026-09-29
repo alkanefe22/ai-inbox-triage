@@ -15,10 +15,16 @@ const path = require('path');
 const crypto = require('crypto');
 const { spawnSync } = require('child_process');
 
-const ROOT = path.resolve(__dirname, '..');
+const { ROOT, setting, baseUrl } = require('./lib/env');
 const WORKFLOW_ID = 'aiInboxTriage001';
 const EXPORT_PATH = path.join(ROOT, 'workflows', 'inbox-triage.json');
-const uid = () => crypto.randomUUID();
+// Node, condition and webhook ids are derived from a counter so that repeated builds produce the
+// same export (no diff noise). Only versionId is random.
+let idCounter = 0;
+const uid = () => {
+  const h = crypto.createHash('sha1').update(WORKFLOW_ID + ':' + idCounter++).digest('hex');
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-4${h.slice(13, 16)}-a${h.slice(17, 20)}-${h.slice(20, 32)}`;
+};
 const readPrompt = (name) => fs.readFileSync(path.join(__dirname, 'prompts', name), 'utf8').trimEnd();
 
 const SYSTEM_PROMPT = readPrompt('classify-system.txt');
@@ -440,6 +446,7 @@ return [{
 
 // ---------------------------------------------------------------- build
 function buildWorkflow() {
+  idCounter = 0;
   const nodes = [];
   const add = (name, type, typeVersion, position, parameters, extra = {}) => {
     nodes.push({ parameters, id: uid(), name, type, typeVersion, position, ...extra });
@@ -662,7 +669,7 @@ function buildWorkflow() {
 
   return {
     id: WORKFLOW_ID,
-    versionId: uid(),
+    versionId: crypto.randomUUID(),
     name: 'AI Inbox Triage',
     active: false,
     nodes,
@@ -673,11 +680,16 @@ function buildWorkflow() {
   };
 }
 
-// Keeps only portable keys (no project/user ids, timestamps or version history).
+// Keeps only portable keys (no project/user ids, timestamps, version history or credentials).
+// The Gmail Trigger is always exported disabled, as in the build.
 function cleanExport(w) {
   const keep = ['id', 'name', 'nodes', 'connections', 'settings'];
   const out = {};
   for (const k of keep) if (k in w) out[k] = w[k];
+  out.nodes = out.nodes.map((n) => {
+    const { credentials, ...rest } = n;
+    return n.name === 'Gmail Trigger' ? { ...rest, disabled: true } : rest;
+  });
   return { ...out, active: false, pinData: {}, tags: [] };
 }
 
@@ -690,22 +702,81 @@ function run(cmd, args, opts = {}) {
 }
 const compose = (...args) => run('docker', ['compose', ...args]);
 const n8n = (...args) => compose('exec', '-T', 'n8n', 'n8n', ...args);
+const catJson = (file) => JSON.parse(compose('exec', '-T', 'n8n', 'cat', file));
 
 async function waitForHealth(timeoutMs = 120000) {
   const end = Date.now() + timeoutMs;
   while (Date.now() < end) {
     try {
-      const r = await fetch('http://localhost:5678/healthz');
+      const r = await fetch(baseUrl() + '/healthz');
       if (r.ok) return;
     } catch {}
     await new Promise((res) => setTimeout(res, 2000));
   }
-  throw new Error('n8n did not become healthy on http://localhost:5678');
+  throw new Error(`n8n did not become healthy on ${baseUrl()}`);
+}
+
+// Current workflow in n8n (or null if it has never been imported).
+function currentWorkflow() {
+  const r = spawnSync('docker', ['compose', 'exec', '-T', 'n8n', 'n8n', 'export:workflow', `--id=${WORKFLOW_ID}`, '--output=/tmp/wf-current.json'], { cwd: ROOT, encoding: 'utf8' });
+  if (r.status !== 0) return null;
+  const w = catJson('/tmp/wf-current.json');
+  compose('exec', '-T', 'n8n', 'rm', '-f', '/tmp/wf-current.json');
+  return Array.isArray(w) ? w[0] : w;
+}
+
+// Looks up a credential's name and type by id. Only these two fields are read; the exported
+// (encrypted) file is deleted right away.
+function credentialInfo(id) {
+  if (!/^[A-Za-z0-9_-]+$/.test(id)) throw new Error('N8N_SHEETS_CREDENTIAL_ID has an invalid format');
+  try {
+    n8n('export:credentials', `--id=${id}`, '--output=/tmp/cred-lookup.json');
+    const c = [].concat(catJson('/tmp/cred-lookup.json'))[0];
+    return { id: c.id, name: c.name, type: c.type };
+  } catch (e) {
+    throw new Error(`credential ${id} (N8N_SHEETS_CREDENTIAL_ID) was not found in n8n`);
+  } finally {
+    spawnSync('docker', ['compose', 'exec', '-T', 'n8n', 'rm', '-f', '/tmp/cred-lookup.json'], { cwd: ROOT });
+  }
+}
+
+const SHEETS_NODE = 'Append to Google Sheet';
+const SHEETS_AUTH = { googleSheetsOAuth2Api: 'oAuth2', googleApi: 'serviceAccount' };
+
+// Keeps credentials (and the Gmail Trigger on/off state) that were set up in the n8n UI, so a
+// redeploy does not disconnect them. N8N_SHEETS_CREDENTIAL_ID, if set, wins for the Sheets node.
+function applyCredentials(workflow, current) {
+  const notes = [];
+  const byName = new Map((current ? current.nodes : []).map((n) => [n.name, n]));
+  for (const node of workflow.nodes) {
+    const old = byName.get(node.name);
+    if (old && old.credentials) {
+      node.credentials = old.credentials;
+      if (old.parameters && old.parameters.authentication) node.parameters.authentication = old.parameters.authentication;
+      notes.push(`kept credential on "${node.name}"`);
+    }
+    if (old && node.name === 'Gmail Trigger' && old.disabled === false) {
+      node.disabled = false;
+      notes.push('kept Gmail Trigger enabled');
+    }
+  }
+  const credId = setting('N8N_SHEETS_CREDENTIAL_ID');
+  if (credId) {
+    const c = credentialInfo(credId);
+    if (!SHEETS_AUTH[c.type]) throw new Error(`credential ${credId} has type ${c.type}, expected a Google Sheets OAuth2 or Google service account credential`);
+    const node = workflow.nodes.find((n) => n.name === SHEETS_NODE);
+    node.credentials = { [c.type]: { id: c.id, name: c.name } };
+    node.parameters.authentication = SHEETS_AUTH[c.type];
+    notes.push(`linked "${SHEETS_NODE}" to credential ${c.id} from N8N_SHEETS_CREDENTIAL_ID`);
+  }
+  return notes;
 }
 
 async function deploy(workflow) {
   const running = compose('ps', '--status', 'running', '--services').split(/\r?\n/);
   if (!running.includes('n8n')) throw new Error('n8n service is not running. Start it with: docker compose up -d');
+
+  for (const note of applyCredentials(workflow, currentWorkflow())) console.log('creds  :', note);
 
   const tmp = path.join(os.tmpdir(), `inbox-triage-import-${process.pid}.json`);
   fs.writeFileSync(tmp, JSON.stringify(workflow, null, 2));
@@ -715,23 +786,23 @@ async function deploy(workflow) {
     fs.rmSync(tmp, { force: true });
   }
   console.log('import :', n8n('import:workflow', '--input=/tmp/wf-import.json').split(/\r?\n/).pop());
+  compose('exec', '-T', '-u', 'root', 'n8n', 'rm', '-f', '/tmp/wf-import.json');
   console.log('publish:', n8n('publish:workflow', `--id=${WORKFLOW_ID}`).split(/\r?\n/)[0]);
   console.log('restart: docker compose restart n8n');
   compose('restart', 'n8n');
   await waitForHealth();
 
-  n8n('export:workflow', `--id=${WORKFLOW_ID}`, '--output=/tmp/wf-export.json');
-  const exported = JSON.parse(compose('exec', '-T', 'n8n', 'cat', '/tmp/wf-export.json'));
-  const w = Array.isArray(exported) ? exported[0] : exported;
+  const w = currentWorkflow();
   // n8n assigns its own versionId on import; check that the published version is the current
-  // draft and that the draft contains exactly the nodes we just built.
-  const code = (wf) => JSON.stringify(wf.nodes.map((n) => [n.name, n.parameters && n.parameters.jsCode]));
-  if (w.activeVersionId !== w.versionId) {
-    throw new Error(`published version ${w.activeVersionId} is not the imported version ${w.versionId}`);
+  // draft and that the draft contains exactly the nodes we just built (including credentials).
+  const sig = (wf) => JSON.stringify(wf.nodes.map((n) => [n.name, n.parameters && n.parameters.jsCode, n.credentials || null]));
+  if (!w || w.activeVersionId !== w.versionId) {
+    throw new Error(`published version ${w && w.activeVersionId} is not the imported version ${w && w.versionId}`);
   }
-  if (code(w) !== code(workflow)) throw new Error('exported workflow does not match the build');
+  if (sig(w) !== sig(workflow)) throw new Error('workflow in n8n does not match the build');
   fs.writeFileSync(EXPORT_PATH, JSON.stringify(cleanExport(w), null, 2) + '\n');
-  console.log('export :', path.relative(ROOT, EXPORT_PATH), `(published version ${w.activeVersionId})`);
+  console.log('export :', path.relative(ROOT, EXPORT_PATH), `(published version ${w.activeVersionId}, credentials removed)`);
+  console.log('ready  :', baseUrl() + '/webhook/inbox-triage');
 }
 
 async function main() {
@@ -747,4 +818,4 @@ if (require.main === module) {
   });
 }
 
-module.exports = { buildWorkflow, cleanExport };
+module.exports = { buildWorkflow, cleanExport, applyCredentials };

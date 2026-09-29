@@ -3,12 +3,14 @@
   "version": "0.1.0",
   "private": true,
   "description": "n8n + LLM email triage demo with a reproducible evaluation",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "engines": {
     "node": ">=18"
   },
   "scripts": {
     "eval": "node scripts/eval.js",
+    "demo": "node scripts/demo.js",
+    "media": "node scripts/media.js",
     "workflow:build": "node scripts/build-workflow.js",
     "workflow:deploy": "node scripts/build-workflow.js --deploy"
   }

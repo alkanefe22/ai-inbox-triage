@@ -35,11 +35,16 @@ const REPLY_PROMPT = readPrompt('reply-system.txt');
 const GEMINI_DEFAULT_DELAY_MS = 6500;
 const GEMINI_MAX_HTTP_RETRIES = 3;
 
-const SCHEMA_FIELDS = ['name', 'company', 'need', 'budget', 'timeline', 'customer', 'topic', 'urgency', 'vendor', 'invoice_number', 'amount', 'currency', 'due_date'];
-const COLUMNS = ['id', 'provider', 'model', 'status', 'attempts', 'error', 'category', 'name', 'company', 'need', 'budget', 'timeline', 'customer', 'topic', 'urgency', 'vendor', 'invoice_number', 'amount', 'currency', 'due_date', 'reply_draft', 'notified', 'latency_ms', 'processed_at'];
+// Categories, fields and types come from scripts/schema.json (its hash is part of every eval report).
+const SCHEMA = JSON.parse(fs.readFileSync(path.join(__dirname, 'schema.json'), 'utf8'));
+const SCHEMA_FIELDS = Object.keys(SCHEMA.types);
+const CATEGORIES = SCHEMA.categories;
+const REVIEW = SCHEMA.needs_review;
+const COLUMNS = ['id', 'provider', 'model', 'status', 'attempts', 'error', 'category', 'suggested_category', 'confidence', 'name', 'company', 'need', 'budget', 'timeline', 'customer', 'topic', 'urgency', 'vendor', 'invoice_number', 'amount', 'currency', 'due_date', 'reply_draft', 'notified', 'from_email', 'subject', 'review_text', 'latency_ms', 'processed_at'];
 
 // ---------------------------------------------------------------- code nodes (JavaScript)
-const CODE_SPLIT = `// Validates config once, then emits one item per email from data/emails.json.
+const CODE_SPLIT = `// Validates config once, then emits one item per email from the input file
+// (data/emails.json, or eval/corrections/emails.json with {"input": "corrections"}).
 const cfg = $('Config').first().json;
 if (!['ollama', 'gemini'].includes(cfg.provider)) {
   throw new Error("provider must be 'ollama' or 'gemini', got: " + JSON.stringify(cfg.provider));
@@ -50,8 +55,11 @@ if (!cfg.model) {
 if (!Number.isFinite(cfg.gemini_delay_ms) || cfg.gemini_delay_ms < 0) {
   throw new Error('gemini_delay_ms must be a number >= 0');
 }
+if (!Number.isFinite(cfg.review_threshold) || cfg.review_threshold < 0 || cfg.review_threshold > 1) {
+  throw new Error('${REVIEW.env} must be a number between 0 and 1');
+}
 const emails = $input.first().json.data;
-if (!Array.isArray(emails)) throw new Error('emails.json must contain a JSON array');
+if (!Array.isArray(emails)) throw new Error(cfg.input_file + ' must contain a JSON array');
 const list = cfg.limit > 0 ? emails.slice(0, cfg.limit) : emails;
 return list.map((e) => ({
   json: {
@@ -97,14 +105,15 @@ const userText = [
 ].join('\\n');
 
 const KEYS = ${JSON.stringify(SCHEMA_FIELDS)};
-const CATEGORIES = ['lead', 'support', 'invoice', 'spam'];
+const CATEGORIES = ${JSON.stringify(CATEGORIES)};
+const URGENCY = ${JSON.stringify(SCHEMA.urgency_values)};
 
 let url, body;
 if (cfg.provider === 'gemini') {
   const props = {};
   for (const k of KEYS) props[k] = { type: 'STRING', nullable: true };
   props.amount = { type: 'NUMBER', nullable: true };
-  props.urgency = { type: 'STRING', enum: ['low', 'medium', 'high'], nullable: true };
+  props.urgency = { type: 'STRING', enum: URGENCY, nullable: true };
   url = 'https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(cfg.model) + ':generateContent';
   body = {
     systemInstruction: { parts: [{ text: SYSTEM }] },
@@ -116,10 +125,11 @@ if (cfg.provider === 'gemini') {
         type: 'OBJECT',
         properties: {
           category: { type: 'STRING', enum: CATEGORIES },
+          confidence: { type: 'NUMBER' },
           fields: { type: 'OBJECT', properties: props, required: KEYS, propertyOrdering: KEYS },
         },
-        required: ['category', 'fields'],
-        propertyOrdering: ['category', 'fields'],
+        required: ['category', 'confidence', 'fields'],
+        propertyOrdering: ['category', 'confidence', 'fields'],
       },
     },
   };
@@ -127,7 +137,7 @@ if (cfg.provider === 'gemini') {
   const props = {};
   for (const k of KEYS) props[k] = { type: ['string', 'null'] };
   props.amount = { type: ['number', 'null'] };
-  props.urgency = { type: ['string', 'null'], enum: ['low', 'medium', 'high', null] };
+  props.urgency = { type: ['string', 'null'], enum: [...URGENCY, null] };
   url = cfg.ollama_base_url + '/api/chat';
   body = {
     model: cfg.model,
@@ -138,9 +148,10 @@ if (cfg.provider === 'gemini') {
       type: 'object',
       properties: {
         category: { type: 'string', enum: CATEGORIES },
+        confidence: { type: 'number' },
         fields: { type: 'object', properties: props, required: KEYS },
       },
-      required: ['category', 'fields'],
+      required: ['category', 'confidence', 'fields'],
     },
     messages: [
       { role: 'system', content: SYSTEM },
@@ -182,14 +193,13 @@ const CODE_VALIDATE = `// Parses the LLM response and checks it against the sche
 const ctx = $('Request Context').last().json;
 const res = $input.first().json;
 
-const FIELDS = {
-  lead: ['name', 'company', 'need', 'budget', 'timeline'],
-  support: ['customer', 'topic', 'urgency'],
-  invoice: ['vendor', 'invoice_number', 'amount', 'currency', 'due_date'],
-  spam: [],
-};
+const FIELDS = ${JSON.stringify(SCHEMA.fields)};
 const ALL_KEYS = ${JSON.stringify(SCHEMA_FIELDS)};
-const TEXT_KEYS = ['name', 'company', 'need', 'budget', 'timeline', 'customer', 'topic', 'vendor', 'invoice_number'];
+const TEXT_KEYS = ${JSON.stringify(SCHEMA_FIELDS.filter((k) => ['text', 'summary'].includes(SCHEMA.types[k])))};
+const SUMMARY_KEYS = ${JSON.stringify(SCHEMA_FIELDS.filter((k) => SCHEMA.types[k] === 'summary'))};
+const URGENCY = ${JSON.stringify(SCHEMA.urgency_values)};
+// Business rule: below this confidence the email is not forced into a category ("${REVIEW.label}").
+const REVIEW_THRESHOLD = $('Config').first().json.review_threshold;
 
 function responseText(r) {
   if (r.error) {
@@ -219,6 +229,10 @@ function validate(text) {
   if (!obj || typeof obj !== 'object' || Array.isArray(obj)) throw new Error('response is not a JSON object');
   const category = obj.category;
   if (!Object.prototype.hasOwnProperty.call(FIELDS, category)) throw new Error('invalid category: ' + JSON.stringify(category));
+  const confidence = obj.confidence;
+  if (typeof confidence !== 'number' || !Number.isFinite(confidence) || confidence < ${SCHEMA.confidence.min} || confidence > ${SCHEMA.confidence.max}) {
+    throw new Error('confidence must be a number between ${SCHEMA.confidence.min} and ${SCHEMA.confidence.max}: ' + JSON.stringify(confidence));
+  }
   const raw = obj.fields;
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) throw new Error('fields must be an object');
   const unknown = Object.keys(raw).filter((k) => !ALL_KEYS.includes(k));
@@ -231,8 +245,8 @@ function validate(text) {
     if (TEXT_KEYS.includes(k)) {
       if (v !== null && typeof v !== 'string') throw new Error(k + ' must be a string or null');
       v = v === null ? null : v.trim() || null;
-      // Business rule: need/topic are capped at 8 words.
-      if (v && (k === 'need' || k === 'topic')) v = v.split(/\\s+/).slice(0, 8).join(' ');
+      // Business rule: need/topic are capped at ${SCHEMA.summary_max_words} words.
+      if (v && SUMMARY_KEYS.includes(k)) v = v.split(/\\s+/).slice(0, ${SCHEMA.summary_max_words}).join(' ');
     } else if (k === 'amount') {
       if (v !== null && (typeof v !== 'number' || !Number.isFinite(v))) throw new Error('amount must be a number or null');
     } else if (k === 'currency') {
@@ -249,12 +263,12 @@ function validate(text) {
         if (isNaN(d) || d.toISOString().slice(0, 10) !== v) throw new Error('due_date is not a real date: ' + v);
       }
     } else if (k === 'urgency') {
-      if (!['low', 'medium', 'high'].includes(v)) throw new Error('urgency must be low, medium or high: ' + JSON.stringify(v));
+      if (!URGENCY.includes(v)) throw new Error('urgency must be one of ' + URGENCY.join(', ') + ': ' + JSON.stringify(v));
     }
     fields[k] = v;
   }
   // Keys that belong to other categories are dropped (n8n keeps only the category's keys).
-  return { category, fields };
+  return { category, confidence, needs_review: confidence < REVIEW_THRESHOLD, fields };
 }
 
 const base = {
@@ -351,7 +365,16 @@ const CODE_BUILD_NOTIFY = `// Telegram message text (plain text, no parse_mode).
 const x = $input.first().json;
 const f = x.result.fields;
 let text;
-if (x.result.category === 'lead') {
+if (x.result.needs_review) {
+  text = [
+    'Review needed [' + x.email.id + ']',
+    'The AI is not sure (confidence ' + x.result.confidence + ' < ' + $('Config').first().json.review_threshold + '); its guess: ' + x.result.category,
+    'From: ' + (x.email.from_name ? x.email.from_name + ' <' + x.email.from_email + '>' : x.email.from_email),
+    'Subject: ' + x.email.subject,
+    '',
+    'Set the right category in the "${REVIEW.label}" tab of the sheet.',
+  ].join('\\n');
+} else if (x.result.category === 'lead') {
   text = [
     'New lead [' + x.email.id + ']',
     'From: ' + (f.name ?? x.email.from_name ?? '-') + (f.company ? ' (' + f.company + ')' : ''),
@@ -384,6 +407,7 @@ const x = $input.first().json;
 const ok = x.valid === true;
 const f = ok ? x.result.fields : {};
 const v = (k) => (f[k] === undefined || f[k] === null ? '' : f[k]);
+const review = ok && x.result.needs_review === true;
 const row = {
   id: x.email.id,
   provider: x.provider,
@@ -391,19 +415,42 @@ const row = {
   status: ok ? 'ok' : 'error',
   attempts: Number(x.attempt) || 1,
   error: ok ? (x.warning || '') : (x.validation_error || 'unknown error'),
-  category: ok ? x.result.category : '',
+  // Low confidence: not forced into a category; the model's guess stays in suggested_category.
+  category: ok ? (review ? '${REVIEW.label}' : x.result.category) : '',
+  suggested_category: ok ? x.result.category : '',
+  confidence: ok ? x.result.confidence : '',
   name: v('name'), company: v('company'), need: v('need'), budget: v('budget'), timeline: v('timeline'),
   customer: v('customer'), topic: v('topic'), urgency: v('urgency'),
   vendor: v('vendor'), invoice_number: v('invoice_number'), amount: v('amount'), currency: v('currency'), due_date: v('due_date'),
   reply_draft: x.reply_draft || '',
   notified: x.notified === true,
+  from_email: x.email.from_email || '',
+  subject: x.email.subject || '',
+  // The email text is kept only for rows a person has to review.
+  review_text: review ? String(x.email.body || '').slice(0, 1500) : '',
   latency_ms: Date.now() - x.started_at,
   processed_at: $now.toISO(),
 };
 return [{ json: row }];`;
 
-const CODE_SHEET_ROWS = `// Rows collected by the loop, for Google Sheets.
-return $('Loop Over Emails').all(0).map((i) => ({ json: i.json }));`;
+const CODE_SHEET_ROWS = `// Rows for the "results" tab: every email except the ones that need a review.
+return $('Loop Over Emails').all(0).filter((i) => i.json.category !== '${REVIEW.label}').map((i) => {
+  const { review_text, ...row } = i.json;
+  return { json: row };
+});`;
+
+const CODE_REVIEW_ROWS = `// Rows for the "${REVIEW.label}" tab. A person fills in correct_category;
+// scripts/add-corrections.js turns the filled rows into eval test cases.
+return $('Loop Over Emails').all(0).filter((i) => i.json.category === '${REVIEW.label}').map((i) => ({ json: {
+  id: i.json.id,
+  from_email: i.json.from_email,
+  subject: i.json.subject,
+  text: i.json.review_text,
+  suggested_category: i.json.suggested_category,
+  confidence: i.json.confidence,
+  correct_category: '',
+  processed_at: i.json.processed_at,
+} }));`;
 
 const CODE_SUMMARY = `// Final run summary (also the webhook response).
 const cfg = $('Config').first().json;
@@ -418,8 +465,10 @@ if (cfg.dry_run) sheets = 'skipped: dry_run';
 else if (cfg.sheets_enabled) {
   let out = [];
   try { out = $('Append to Google Sheet').all(); } catch (e) { out = []; }
-  const err = out.find((i) => i.json && i.json.error);
-  sheets = err ? 'skipped: Google Sheets step failed (check the credential and that a "results" tab exists)' : 'appended ' + out.length + ' rows';
+  let rev = [];
+  try { rev = $('Append Needs Review').all(); } catch (e) { rev = []; }
+  const err = [...out, ...rev].find((i) => i.json && i.json.error);
+  sheets = err ? 'skipped: Google Sheets step failed (check the credential and that the "results" and "${REVIEW.label}" tabs exist)' : 'appended ' + out.length + ' rows to results, ' + rev.length + ' to ${REVIEW.label}';
 }
 let telegram = cfg.telegram_enabled ? 'enabled' : 'skipped: TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID is empty';
 if (cfg.dry_run) telegram = 'skipped: dry_run';
@@ -433,9 +482,12 @@ return [{
     error: rows.length - ok.length,
     retried: rows.filter((r) => Number(r.attempts) > 1).length,
     by_category: byCategory,
+    needs_review: rows.filter((r) => r.category === '${REVIEW.label}').length,
+    review_threshold: cfg.review_threshold,
     notified: rows.filter((r) => r.notified === true).length,
     avg_latency_ms: avg(rows),
     gemini_delay_ms: cfg.provider === 'gemini' ? cfg.gemini_delay_ms : null,
+    input: cfg.input_file,
     csv: '/files/output/results.csv',
     telegram,
     sheets,
@@ -504,7 +556,7 @@ function buildWorkflow() {
     options: {},
   }, { disabled: true });
 
-  // config: webhook body (provider, dry_run, limit, gemini_delay_ms) overrides; secrets stay in $env
+  // config: webhook body (provider, dry_run, limit, gemini_delay_ms, input, review_threshold) overrides; secrets stay in $env
   add('Config', 'n8n-nodes-base.set', 3.4, [240, 200], {
     assignments: {
       assignments: [
@@ -516,6 +568,8 @@ function buildWorkflow() {
         { id: uid(), name: 'sheets_enabled', type: 'boolean', value: '={{ !!$env.GOOGLE_SHEET_ID }}' },
         { id: uid(), name: 'limit', type: 'number', value: `={{ Number(${body('limit')} || ($json.query && $json.query.limit) || 0) || 0 }}` },
         { id: uid(), name: 'gemini_delay_ms', type: 'number', value: `={{ ($json.body && $json.body.gemini_delay_ms !== undefined && $json.body.gemini_delay_ms !== '') ? Number($json.body.gemini_delay_ms) : (($env.GEMINI_DELAY_MS || '') !== '' ? Number($env.GEMINI_DELAY_MS) : ${GEMINI_DEFAULT_DELAY_MS}) }}` },
+        { id: uid(), name: 'input_file', type: 'string', value: `={{ ${body('input')} === 'corrections' ? '/files/corrections/emails.json' : '/files/data/emails.json' }}` },
+        { id: uid(), name: 'review_threshold', type: 'number', value: `={{ (${body('review_threshold')} !== undefined && ${body('review_threshold')} !== '' && ${body('review_threshold')} !== null) ? Number(${body('review_threshold')}) : ($env.${REVIEW.env} || '') !== '' ? Number($env.${REVIEW.env}) : ${REVIEW.default_threshold} }}` },
         { id: uid(), name: 'run_started_at', type: 'string', value: '={{ $now.toISO() }}' },
       ],
     },
@@ -526,7 +580,7 @@ function buildWorkflow() {
   code('Map Gmail Message', [700, 400], CODE_GMAIL);
   add('Read emails.json', 'n8n-nodes-base.readWriteFile', 1.1, [700, 100], {
     operation: 'read',
-    fileSelector: '/files/data/emails.json',
+    fileSelector: "={{ $('Config').first().json.input_file }}",
     options: {},
   });
   add('Parse JSON', 'n8n-nodes-base.extractFromFile', 1.1, [920, 100], { operation: 'fromJson', destinationKey: 'data', options: {} });
@@ -548,9 +602,10 @@ function buildWorkflow() {
   ifNode('Can Retry?', [3580, 420], cond('={{ $json.attempt < 2 && !$json.no_retry }}', BOOL_TRUE));
   code('Retry With Feedback', [3800, 520], CODE_RETRY);
 
-  add('Route by Category', 'n8n-nodes-base.switch', 3.2, [3580, 120], {
+  ifNode('Needs Review?', [3580, 20], cond('={{ $json.result.needs_review }}', BOOL_TRUE));
+  add('Route by Category', 'n8n-nodes-base.switch', 3.2, [3800, 220], {
     rules: {
-      values: ['lead', 'support', 'invoice', 'spam'].map((c) => ({
+      values: CATEGORIES.map((c) => ({
         conditions: {
           options: { caseSensitive: true, leftValue: '', typeValidation: 'strict', version: 2 },
           conditions: [cond('={{ $json.result.category }}', { type: 'string', operation: 'equals' }, c)],
@@ -594,8 +649,9 @@ function buildWorkflow() {
     options: { append: false },
   });
   ifNode('Sheets Enabled?', [2040, -200], cond("={{ $('Config').first().json.sheets_enabled && !$('Config').first().json.dry_run }}", BOOL_TRUE));
-  code('Rows for Sheet', [2260, -300], CODE_SHEET_ROWS);
-  add('Append to Google Sheet', 'n8n-nodes-base.googleSheets', 4.7, [2480, -300], {
+  ifNode('Any Results?', [2260, -300], cond(`={{ $('Loop Over Emails').all(0).some((i) => i.json.category !== '${REVIEW.label}') }}`, BOOL_TRUE));
+  code('Rows for Sheet', [2480, -400], CODE_SHEET_ROWS);
+  add('Append to Google Sheet', 'n8n-nodes-base.googleSheets', 4.7, [2700, -400], {
     authentication: 'oAuth2',
     resource: 'sheet',
     operation: 'append',
@@ -604,7 +660,18 @@ function buildWorkflow() {
     columns: { mappingMode: 'autoMapInputData', value: {}, matchingColumns: [], schema: [] },
     options: {},
   }, { onError: 'continueRegularOutput', alwaysOutputData: true });
-  code('Run Summary', [2700, -200], CODE_SUMMARY);
+  ifNode('Any Needs Review?', [2920, -300], cond(`={{ $('Loop Over Emails').all(0).some((i) => i.json.category === '${REVIEW.label}') }}`, BOOL_TRUE));
+  code('Review Rows', [3140, -400], CODE_REVIEW_ROWS);
+  add('Append Needs Review', 'n8n-nodes-base.googleSheets', 4.7, [3360, -400], {
+    authentication: 'oAuth2',
+    resource: 'sheet',
+    operation: 'append',
+    documentId: { __rl: true, mode: 'id', value: '={{ $env.GOOGLE_SHEET_ID }}' },
+    sheetName: { __rl: true, mode: 'name', value: REVIEW.label },
+    columns: { mappingMode: 'autoMapInputData', value: {}, matchingColumns: [], schema: [] },
+    options: {},
+  }, { onError: 'continueRegularOutput', alwaysOutputData: true });
+  code('Run Summary', [3580, -200], CODE_SUMMARY);
 
   const connections = {};
   const link = (from, to, fromOutput = 0) => {
@@ -636,7 +703,9 @@ function buildWorkflow() {
   link('Transient Error?', 'Validate Output', 1);
   link('Backoff Wait', 'Request Context');
   link('Validate Output', 'Valid?');
-  link('Valid?', 'Route by Category', 0);
+  link('Valid?', 'Needs Review?', 0);
+  link('Needs Review?', 'Build Notification', 0);  // low confidence -> "review needed" alert
+  link('Needs Review?', 'Route by Category', 1);
   link('Valid?', 'Can Retry?', 1);
   link('Can Retry?', 'Retry With Feedback', 0);
   link('Can Retry?', 'Record Result', 1);           // still invalid -> status=error
@@ -662,10 +731,16 @@ function buildWorkflow() {
 
   link('Convert to CSV', 'Write results.csv');
   link('Write results.csv', 'Sheets Enabled?');
-  link('Sheets Enabled?', 'Rows for Sheet', 0);
+  link('Sheets Enabled?', 'Any Results?', 0);
   link('Sheets Enabled?', 'Run Summary', 1);
+  link('Any Results?', 'Rows for Sheet', 0);
+  link('Any Results?', 'Any Needs Review?', 1);
   link('Rows for Sheet', 'Append to Google Sheet');
-  link('Append to Google Sheet', 'Run Summary');
+  link('Append to Google Sheet', 'Any Needs Review?');
+  link('Any Needs Review?', 'Review Rows', 0);
+  link('Any Needs Review?', 'Run Summary', 1);
+  link('Review Rows', 'Append Needs Review');
+  link('Append Needs Review', 'Run Summary');
 
   return {
     id: WORKFLOW_ID,
@@ -740,7 +815,7 @@ function credentialInfo(id) {
   }
 }
 
-const SHEETS_NODE = 'Append to Google Sheet';
+const SHEETS_NODES = ['Append to Google Sheet', 'Append Needs Review'];
 const SHEETS_AUTH = { googleSheetsOAuth2Api: 'oAuth2', googleApi: 'serviceAccount' };
 
 // Keeps credentials (and the Gmail Trigger on/off state) that were set up in the n8n UI, so a
@@ -760,14 +835,25 @@ function applyCredentials(workflow, current) {
       notes.push('kept Gmail Trigger enabled');
     }
   }
+  // A Sheets node without a credential gets the one of the other Sheets node (same spreadsheet).
+  const sheetsNodes = workflow.nodes.filter((n) => SHEETS_NODES.includes(n.name));
+  const withCred = sheetsNodes.find((n) => n.credentials);
+  for (const node of sheetsNodes) {
+    if (!node.credentials && withCred) {
+      node.credentials = withCred.credentials;
+      node.parameters.authentication = withCred.parameters.authentication;
+      notes.push(`copied the Sheets credential to "${node.name}"`);
+    }
+  }
   const credId = setting('N8N_SHEETS_CREDENTIAL_ID');
   if (credId) {
     const c = credentialInfo(credId);
     if (!SHEETS_AUTH[c.type]) throw new Error(`credential ${credId} has type ${c.type}, expected a Google Sheets OAuth2 or Google service account credential`);
-    const node = workflow.nodes.find((n) => n.name === SHEETS_NODE);
-    node.credentials = { [c.type]: { id: c.id, name: c.name } };
-    node.parameters.authentication = SHEETS_AUTH[c.type];
-    notes.push(`linked "${SHEETS_NODE}" to credential ${c.id} from N8N_SHEETS_CREDENTIAL_ID`);
+    for (const node of workflow.nodes.filter((n) => SHEETS_NODES.includes(n.name))) {
+      node.credentials = { [c.type]: { id: c.id, name: c.name } };
+      node.parameters.authentication = SHEETS_AUTH[c.type];
+      notes.push(`linked "${node.name}" to credential ${c.id} from N8N_SHEETS_CREDENTIAL_ID`);
+    }
   }
   return notes;
 }

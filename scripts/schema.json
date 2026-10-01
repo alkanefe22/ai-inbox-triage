@@ -1,0 +1,33 @@
+{
+  "description": "Output schema of the classification step. Read by scripts/build-workflow.js (LLM response format and the n8n validation) and scripts/eval.js (scoring). Its SHA-256 is written into every eval report.",
+  "categories": ["lead", "support", "invoice", "spam"],
+  "fields": {
+    "lead": ["name", "company", "need", "budget", "timeline"],
+    "support": ["customer", "topic", "urgency"],
+    "invoice": ["vendor", "invoice_number", "amount", "currency", "due_date"],
+    "spam": []
+  },
+  "types": {
+    "name": "text",
+    "company": "text",
+    "need": "summary",
+    "budget": "text",
+    "timeline": "text",
+    "customer": "text",
+    "topic": "summary",
+    "urgency": "urgency",
+    "vendor": "text",
+    "invoice_number": "text",
+    "amount": "number",
+    "currency": "currency",
+    "due_date": "date"
+  },
+  "summary_max_words": 8,
+  "urgency_values": ["low", "medium", "high"],
+  "confidence": { "type": "number", "min": 0, "max": 1 },
+  "needs_review": {
+    "label": "needs_review",
+    "default_threshold": 0.7,
+    "env": "REVIEW_THRESHOLD"
+  }
+}

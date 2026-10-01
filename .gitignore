@@ -40,3 +40,6 @@ desktop.ini
 .idea/
 *.swp
 *~
+
+# Human corrections can contain real emails (see eval/corrections/README.md)
+eval/corrections/*.json

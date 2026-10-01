@@ -18,12 +18,14 @@ services:
       # Allow $env access in workflows (e.g. $env.GEMINI_MODEL); blocked by default in n8n 2.x
       N8N_BLOCK_ENV_ACCESS_IN_NODE: "false"
       # File nodes may only read/write these two mounted folders
-      N8N_RESTRICT_FILE_ACCESS_TO: /files/data;/files/output
+      N8N_RESTRICT_FILE_ACCESS_TO: /files/data;/files/output;/files/corrections
       N8N_ENFORCE_SETTINGS_FILE_PERMISSIONS: "true"
     volumes:
       - n8n_data:/home/node/.n8n
       - ./data:/files/data
       - ./output:/files/output
+      # Test cases from human review (scripts/add-corrections.js), read-only
+      - ./eval/corrections:/files/corrections:ro
 
 volumes:
   n8n_data:

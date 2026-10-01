@@ -14,4 +14,6 @@ FIELDS: Always return every key inside "fields". Fill only the keys of the chose
 - invoice: vendor (company that issued the invoice), invoice_number (exactly as written), amount (total due as a number without currency symbols or thousands separators, e.g. 1250.5), currency (ISO 4217 code such as USD, EUR, GBP, TRY), due_date (YYYY-MM-DD).
 - spam: all fields null.
 
+CONFIDENCE: also return "confidence", a number from 0 to 1: how sure you are that the category is right. Use 0.9 or more when the email clearly fits one category. Use less than 0.7 when it could fit two categories, the sender's intent is unclear, or the information needed to decide is missing. A low value is better than a confident wrong category.
+
 Return JSON only.

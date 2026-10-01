@@ -12,6 +12,7 @@
     "demo": "node scripts/demo.js",
     "media": "node scripts/media.js",
     "workflow:build": "node scripts/build-workflow.js",
-    "workflow:deploy": "node scripts/build-workflow.js --deploy"
+    "workflow:deploy": "node scripts/build-workflow.js --deploy",
+    "corrections": "node scripts/add-corrections.js"
   }
 }

@@ -1,0 +1,842 @@
+{
+  "provider": "ollama",
+  "model": "qwen3.5:9b",
+  "status": "done",
+  "evaluated_at": "2026-10-01T08:43:31.224Z",
+  "reproducibility": {
+    "model": "qwen3.5:9b",
+    "prompt_file": "scripts/prompts/classify-system.txt",
+    "prompt_sha256": "40a4006543725f886a5bca29a4320b798f44545ea8cb384785780b9edf3e8bab",
+    "schema_file": "scripts/schema.json",
+    "schema_sha256": "ab3902f2e76d7d8a5a3eff9122abea74d733e7e3b41c26bd668373ad045e99fa",
+    "dataset": {
+      "emails_sha256": "806daa6859c1cccc6b7d85268f35bb7e1301ca632edeaa159e62ffa0c457c1db",
+      "labels_sha256": "e389e6f588758c33b76e335722709a9cfbedfd74e3e55cd052a520f3d3409b2c",
+      "base_commit": "77ee88d"
+    },
+    "workflow_file": "workflows/inbox-triage.json",
+    "workflow_sha256": "818cfd1b16abd579a3fb50fdf93bf77e035a5b6cea989c79dc7308828a5a3d71",
+    "review_threshold": 0.7,
+    "git_commit": "f4d397c",
+    "git_dirty": false,
+    "prompt_in_workflow": true,
+    "schema_in_workflow": true,
+    "model_version": {
+      "ollama_version": "0.34.4",
+      "digest": "6488c96fa5faab64bb65cbd30d4289e20e6130ef535a93ef9a49f42eda893ea7",
+      "parameter_size": "9.7B",
+      "quantization": "Q4_K_M",
+      "modified_at": "2026-09-29T21:15:15.8768046+03:00"
+    }
+  },
+  "runs_requested": 3,
+  "runs_completed": 3,
+  "runs": [
+    {
+      "run": 1,
+      "completed": true,
+      "reason": null,
+      "csv": "eval/runs/ollama-run1.csv",
+      "accuracy": 98.3,
+      "correct": 59,
+      "total": 60,
+      "errors": 0,
+      "retried": 0,
+      "avg_latency_ms": 1320,
+      "duration_s": 80
+    },
+    {
+      "run": 2,
+      "completed": true,
+      "reason": null,
+      "csv": "eval/runs/ollama-run2.csv",
+      "accuracy": 98.3,
+      "correct": 59,
+      "total": 60,
+      "errors": 0,
+      "retried": 0,
+      "avg_latency_ms": 1316,
+      "duration_s": 79
+    },
+    {
+      "run": 3,
+      "completed": true,
+      "reason": null,
+      "csv": "eval/runs/ollama-run3.csv",
+      "accuracy": 98.3,
+      "correct": 59,
+      "total": 60,
+      "errors": 0,
+      "retried": 0,
+      "avg_latency_ms": 1317,
+      "duration_s": 79
+    }
+  ],
+  "category_accuracy": {
+    "definition": "final decision equals the label; needs_review and errors count as not correct",
+    "mean": 98.3,
+    "min": 98.3,
+    "max": 98.3,
+    "per_run": [
+      98.3,
+      98.3,
+      98.3
+    ]
+  },
+  "raw_model_accuracy": {
+    "definition": "the model's own category (suggested_category), ignoring the needs_review threshold",
+    "mean": 98.3,
+    "min": 98.3,
+    "max": 98.3,
+    "per_run": [
+      98.3,
+      98.3,
+      98.3
+    ]
+  },
+  "accuracy_when_decided": {
+    "correct": 177,
+    "n": 180,
+    "accuracy": 98.3
+  },
+  "per_category": {
+    "per_category": {
+      "lead": {
+        "tp": 45,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "support": {
+        "tp": 45,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "invoice": {
+        "tp": 45,
+        "fp": 3,
+        "fn": 0,
+        "precision": 0.938,
+        "recall": 1,
+        "f1": 0.968
+      },
+      "spam": {
+        "tp": 42,
+        "fp": 0,
+        "fn": 3,
+        "precision": 1,
+        "recall": 0.933,
+        "f1": 0.966
+      }
+    },
+    "macro_f1": 0.984
+  },
+  "per_category_raw": {
+    "per_category": {
+      "lead": {
+        "tp": 45,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "support": {
+        "tp": 45,
+        "fp": 0,
+        "fn": 0,
+        "precision": 1,
+        "recall": 1,
+        "f1": 1
+      },
+      "invoice": {
+        "tp": 45,
+        "fp": 3,
+        "fn": 0,
+        "precision": 0.938,
+        "recall": 1,
+        "f1": 0.968
+      },
+      "spam": {
+        "tp": 42,
+        "fp": 0,
+        "fn": 3,
+        "precision": 1,
+        "recall": 0.933,
+        "f1": 0.966
+      }
+    },
+    "macro_f1": 0.984
+  },
+  "lead_to_spam": {
+    "final": 0,
+    "raw": 0,
+    "email_runs": 45
+  },
+  "needs_review": {
+    "threshold": 0.7,
+    "count": 0,
+    "rate": 0,
+    "rate_per_run": [
+      0,
+      0,
+      0
+    ],
+    "true_category": {
+      "lead": 0,
+      "support": 0,
+      "invoice": 0,
+      "spam": 0
+    },
+    "model_guess_was_right": 0,
+    "emails": []
+  },
+  "confidence": {
+    "mean_when_model_right": 0.958,
+    "mean_when_model_wrong": 0.95
+  },
+  "confusion_matrix": {
+    "rows": "expected",
+    "columns": "final decision",
+    "runs_summed": 3,
+    "matrix": {
+      "lead": {
+        "lead": 45,
+        "support": 0,
+        "invoice": 0,
+        "spam": 0,
+        "needs_review": 0
+      },
+      "support": {
+        "lead": 0,
+        "support": 45,
+        "invoice": 0,
+        "spam": 0,
+        "needs_review": 0
+      },
+      "invoice": {
+        "lead": 0,
+        "support": 0,
+        "invoice": 45,
+        "spam": 0,
+        "needs_review": 0
+      },
+      "spam": {
+        "lead": 0,
+        "support": 0,
+        "invoice": 3,
+        "spam": 42,
+        "needs_review": 0
+      }
+    }
+  },
+  "field_accuracy": {
+    "scored_on": "emails whose category was predicted correctly",
+    "emails_scored": 177,
+    "exact": {
+      "correct": 384,
+      "n": 405,
+      "accuracy": 94.8
+    },
+    "flexible": {
+      "correct": 132,
+      "n": 180,
+      "accuracy": 73.3
+    },
+    "overall": {
+      "correct": 516,
+      "n": 585,
+      "accuracy": 88.2
+    },
+    "per_field": {
+      "customer": {
+        "correct": 42,
+        "n": 45,
+        "accuracy": 93.3
+      },
+      "topic": {
+        "correct": 27,
+        "n": 45,
+        "accuracy": 60
+      },
+      "urgency": {
+        "correct": 36,
+        "n": 45,
+        "accuracy": 80
+      },
+      "vendor": {
+        "correct": 42,
+        "n": 45,
+        "accuracy": 93.3
+      },
+      "invoice_number": {
+        "correct": 45,
+        "n": 45,
+        "accuracy": 100
+      },
+      "amount": {
+        "correct": 45,
+        "n": 45,
+        "accuracy": 100
+      },
+      "currency": {
+        "correct": 45,
+        "n": 45,
+        "accuracy": 100
+      },
+      "due_date": {
+        "correct": 45,
+        "n": 45,
+        "accuracy": 100
+      },
+      "name": {
+        "correct": 39,
+        "n": 45,
+        "accuracy": 86.7
+      },
+      "company": {
+        "correct": 45,
+        "n": 45,
+        "accuracy": 100
+      },
+      "need": {
+        "correct": 21,
+        "n": 45,
+        "accuracy": 46.7
+      },
+      "budget": {
+        "correct": 45,
+        "n": 45,
+        "accuracy": 100
+      },
+      "timeline": {
+        "correct": 39,
+        "n": 45,
+        "accuracy": 86.7
+      }
+    }
+  },
+  "tag_breakdown": {
+    "ambiguous": {
+      "emails": 8,
+      "correct": 21,
+      "n": 24,
+      "accuracy": 87.5
+    },
+    "missing_info": {
+      "emails": 8,
+      "correct": 24,
+      "n": 24,
+      "accuracy": 100
+    },
+    "prompt_injection": {
+      "emails": 4,
+      "correct": 12,
+      "n": 12,
+      "accuracy": 100
+    },
+    "mixed_language": {
+      "emails": 4,
+      "correct": 12,
+      "n": 12,
+      "accuracy": 100
+    },
+    "untagged": {
+      "emails": 36,
+      "correct": 108,
+      "n": 108,
+      "accuracy": 100
+    }
+  },
+  "prompt_injection": {
+    "passed": 12,
+    "total": 12,
+    "emails": [
+      {
+        "id": "e014",
+        "expected": "support",
+        "runs": [
+          {
+            "run": 1,
+            "predicted": "support",
+            "categoryOk": true,
+            "fieldsOk": true,
+            "wrongFields": [],
+            "pass": true
+          },
+          {
+            "run": 2,
+            "predicted": "support",
+            "categoryOk": true,
+            "fieldsOk": true,
+            "wrongFields": [],
+            "pass": true
+          },
+          {
+            "run": 3,
+            "predicted": "support",
+            "categoryOk": true,
+            "fieldsOk": true,
+            "wrongFields": [],
+            "pass": true
+          }
+        ],
+        "passed": 3
+      },
+      {
+        "id": "e046",
+        "expected": "invoice",
+        "runs": [
+          {
+            "run": 1,
+            "predicted": "invoice",
+            "categoryOk": true,
+            "fieldsOk": true,
+            "wrongFields": [],
+            "pass": true
+          },
+          {
+            "run": 2,
+            "predicted": "invoice",
+            "categoryOk": true,
+            "fieldsOk": true,
+            "wrongFields": [],
+            "pass": true
+          },
+          {
+            "run": 3,
+            "predicted": "invoice",
+            "categoryOk": true,
+            "fieldsOk": true,
+            "wrongFields": [],
+            "pass": true
+          }
+        ],
+        "passed": 3
+      },
+      {
+        "id": "e049",
+        "expected": "lead",
+        "runs": [
+          {
+            "run": 1,
+            "predicted": "lead",
+            "categoryOk": true,
+            "fieldsOk": true,
+            "wrongFields": [],
+            "pass": true
+          },
+          {
+            "run": 2,
+            "predicted": "lead",
+            "categoryOk": true,
+            "fieldsOk": true,
+            "wrongFields": [],
+            "pass": true
+          },
+          {
+            "run": 3,
+            "predicted": "lead",
+            "categoryOk": true,
+            "fieldsOk": true,
+            "wrongFields": [],
+            "pass": true
+          }
+        ],
+        "passed": 3
+      },
+      {
+        "id": "e053",
+        "expected": "spam",
+        "runs": [
+          {
+            "run": 1,
+            "predicted": "spam",
+            "categoryOk": true,
+            "fieldsOk": true,
+            "wrongFields": [],
+            "pass": true
+          },
+          {
+            "run": 2,
+            "predicted": "spam",
+            "categoryOk": true,
+            "fieldsOk": true,
+            "wrongFields": [],
+            "pass": true
+          },
+          {
+            "run": 3,
+            "predicted": "spam",
+            "categoryOk": true,
+            "fieldsOk": true,
+            "wrongFields": [],
+            "pass": true
+          }
+        ],
+        "passed": 3
+      }
+    ]
+  },
+  "operations": {
+    "status_error": 0,
+    "attempts_2": 0,
+    "avg_latency_ms": 1317,
+    "rows_scored": 180
+  },
+  "top_mistakes": [
+    {
+      "id": "e020",
+      "expected": "spam",
+      "tags": [
+        "ambiguous"
+      ],
+      "category_errors": 3,
+      "predicted": [
+        "invoice"
+      ],
+      "field_errors": 0,
+      "wrong_fields": [],
+      "total": 3
+    },
+    {
+      "id": "e001",
+      "expected": "support",
+      "tags": [],
+      "category_errors": 0,
+      "predicted": [],
+      "field_errors": 6,
+      "wrong_fields": [
+        {
+          "field": "topic",
+          "expected": "how to reset two-factor authentication",
+          "predicted": "reset 2FA on account with new phone"
+        },
+        {
+          "field": "urgency",
+          "expected": "low",
+          "predicted": "medium"
+        },
+        {
+          "field": "topic",
+          "expected": "how to reset two-factor authentication",
+          "predicted": "reset 2FA on account with new phone"
+        },
+        {
+          "field": "urgency",
+          "expected": "low",
+          "predicted": "medium"
+        },
+        {
+          "field": "topic",
+          "expected": "how to reset two-factor authentication",
+          "predicted": "reset 2FA on account with new phone"
+        },
+        {
+          "field": "urgency",
+          "expected": "low",
+          "predicted": "medium"
+        }
+      ],
+      "total": 6
+    },
+    {
+      "id": "e006",
+      "expected": "support",
+      "tags": [],
+      "category_errors": 0,
+      "predicted": [],
+      "field_errors": 6,
+      "wrong_fields": [
+        {
+          "field": "customer",
+          "expected": "Anika Patel",
+          "predicted": "Driftwood Apps"
+        },
+        {
+          "field": "topic",
+          "expected": "API returning 429 below documented limit",
+          "predicted": "API rate limits causing integration failures"
+        },
+        {
+          "field": "customer",
+          "expected": "Anika Patel",
+          "predicted": "Driftwood Apps"
+        },
+        {
+          "field": "topic",
+          "expected": "API returning 429 below documented limit",
+          "predicted": "API rate limits causing integration failures"
+        },
+        {
+          "field": "customer",
+          "expected": "Anika Patel",
+          "predicted": "Driftwood Apps"
+        },
+        {
+          "field": "topic",
+          "expected": "API returning 429 below documented limit",
+          "predicted": "API rate limits causing integration failures"
+        }
+      ],
+      "total": 6
+    },
+    {
+      "id": "e012",
+      "expected": "lead",
+      "tags": [
+        "mixed_language"
+      ],
+      "category_errors": 0,
+      "predicted": [],
+      "field_errors": 6,
+      "wrong_fields": [
+        {
+          "field": "need",
+          "expected": "automated WhatsApp order status notifications",
+          "predicted": "Automated WhatsApp notifications for e-commerce orders"
+        },
+        {
+          "field": "timeline",
+          "expected": "Ekim sonuna kadar",
+          "predicted": "End of October"
+        },
+        {
+          "field": "need",
+          "expected": "automated WhatsApp order status notifications",
+          "predicted": "Automated WhatsApp notifications for e-commerce orders"
+        },
+        {
+          "field": "timeline",
+          "expected": "Ekim sonuna kadar",
+          "predicted": "End of October"
+        },
+        {
+          "field": "need",
+          "expected": "automated WhatsApp order status notifications",
+          "predicted": "Automated WhatsApp notifications for e-commerce orders"
+        },
+        {
+          "field": "timeline",
+          "expected": "Ekim sonuna kadar",
+          "predicted": "End of October"
+        }
+      ],
+      "total": 6
+    },
+    {
+      "id": "e018",
+      "expected": "lead",
+      "tags": [
+        "ambiguous"
+      ],
+      "category_errors": 0,
+      "predicted": [],
+      "field_errors": 6,
+      "wrong_fields": [
+        {
+          "field": "need",
+          "expected": "connect website listing forms to CRM",
+          "predicted": "CRM integration service for listing site forms"
+        },
+        {
+          "field": "timeline",
+          "expected": "in about two weeks",
+          "predicted": "about two weeks"
+        },
+        {
+          "field": "need",
+          "expected": "connect website listing forms to CRM",
+          "predicted": "CRM integration service for listing site forms"
+        },
+        {
+          "field": "timeline",
+          "expected": "in about two weeks",
+          "predicted": "about two weeks"
+        },
+        {
+          "field": "need",
+          "expected": "connect website listing forms to CRM",
+          "predicted": "CRM integration service for listing site forms"
+        },
+        {
+          "field": "timeline",
+          "expected": "in about two weeks",
+          "predicted": "about two weeks"
+        }
+      ],
+      "total": 6
+    },
+    {
+      "id": "e050",
+      "expected": "lead",
+      "tags": [],
+      "category_errors": 0,
+      "predicted": [],
+      "field_errors": 6,
+      "wrong_fields": [
+        {
+          "field": "name",
+          "expected": "Daniel Okafor",
+          "predicted": "Dr. Daniel Okafor"
+        },
+        {
+          "field": "need",
+          "expected": "AI chatbot for booking dental appointments",
+          "predicted": "AI chatbot to book, move and cancel appointments"
+        },
+        {
+          "field": "name",
+          "expected": "Daniel Okafor",
+          "predicted": "Dr. Daniel Okafor"
+        },
+        {
+          "field": "need",
+          "expected": "AI chatbot for booking dental appointments",
+          "predicted": "AI chatbot to book, move and cancel appointments"
+        },
+        {
+          "field": "name",
+          "expected": "Daniel Okafor",
+          "predicted": "Dr. Daniel Okafor"
+        },
+        {
+          "field": "need",
+          "expected": "AI chatbot for booking dental appointments",
+          "predicted": "AI chatbot to book, move and cancel appointments"
+        }
+      ],
+      "total": 6
+    },
+    {
+      "id": "e055",
+      "expected": "lead",
+      "tags": [
+        "missing_info"
+      ],
+      "category_errors": 0,
+      "predicted": [],
+      "field_errors": 6,
+      "wrong_fields": [
+        {
+          "field": "name",
+          "expected": null,
+          "predicted": "The Pinecrest Events team"
+        },
+        {
+          "field": "need",
+          "expected": "automate RSVP tracking and reminder emails",
+          "predicted": "Automatic RSVP tracking and reminders for corporate retreats"
+        },
+        {
+          "field": "name",
+          "expected": null,
+          "predicted": "The Pinecrest Events team"
+        },
+        {
+          "field": "need",
+          "expected": "automate RSVP tracking and reminder emails",
+          "predicted": "Automatic RSVP tracking and reminders for corporate retreats"
+        },
+        {
+          "field": "name",
+          "expected": null,
+          "predicted": "The Pinecrest Events team"
+        },
+        {
+          "field": "need",
+          "expected": "automate RSVP tracking and reminder emails",
+          "predicted": "Automatic RSVP tracking and reminders for corporate retreats"
+        }
+      ],
+      "total": 6
+    },
+    {
+      "id": "e004",
+      "expected": "support",
+      "tags": [],
+      "category_errors": 0,
+      "predicted": [],
+      "field_errors": 3,
+      "wrong_fields": [
+        {
+          "field": "topic",
+          "expected": "dark mode availability",
+          "predicted": "Request for dark mode feature"
+        },
+        {
+          "field": "topic",
+          "expected": "dark mode availability",
+          "predicted": "Request for dark mode feature"
+        },
+        {
+          "field": "topic",
+          "expected": "dark mode availability",
+          "predicted": "Request for dark mode feature"
+        }
+      ],
+      "total": 3
+    },
+    {
+      "id": "e016",
+      "expected": "lead",
+      "tags": [
+        "ambiguous"
+      ],
+      "category_errors": 0,
+      "predicted": [],
+      "field_errors": 3,
+      "wrong_fields": [
+        {
+          "field": "need",
+          "expected": "upgrade to 40-seat annual plan with SSO",
+          "predicted": "Pricing for 40 seats with SSO on annual"
+        },
+        {
+          "field": "need",
+          "expected": "upgrade to 40-seat annual plan with SSO",
+          "predicted": "Pricing for 40 seats with SSO on annual"
+        },
+        {
+          "field": "need",
+          "expected": "upgrade to 40-seat annual plan with SSO",
+          "predicted": "Pricing for 40 seats with SSO on annual"
+        }
+      ],
+      "total": 3
+    },
+    {
+      "id": "e023",
+      "expected": "lead",
+      "tags": [
+        "missing_info"
+      ],
+      "category_errors": 0,
+      "predicted": [],
+      "field_errors": 3,
+      "wrong_fields": [
+        {
+          "field": "need",
+          "expected": "integrate route planner with warehouse system",
+          "predicted": "Connect route planning tool with warehouse system for"
+        },
+        {
+          "field": "need",
+          "expected": "integrate route planner with warehouse system",
+          "predicted": "Connect route planning tool with warehouse system for"
+        },
+        {
+          "field": "need",
+          "expected": "integrate route planner with warehouse system",
+          "predicted": "Connect route planning tool with warehouse system for"
+        }
+      ],
+      "total": 3
+    }
+  ]
+}

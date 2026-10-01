@@ -16,7 +16,9 @@ flowchart LR
     LLM --> V{"Schema check<br/>(n8n Code node)"}
     V -- "invalid: 1 retry with the error as feedback" --> LLM
     V -- "still invalid" --> REC
-    V -- "valid" --> S{"Switch by category"}
+    V -- "valid" --> C{"confidence ≥<br/>REVIEW_THRESHOLD?"}
+    C -- "no" --> NR["needs_review<br/>Telegram: review needed"] --> REC
+    C -- "yes" --> S{"Switch by category"}
     S -- lead --> RD["Reply draft<br/>(second LLM call)"] --> TG["Telegram"]
     S -- support --> U{"urgency = high?"}
     U -- yes --> TG
@@ -25,7 +27,7 @@ flowchart LR
     S -- spam --> REC
     TG --> REC["Record result row"]
     REC --> L
-    L -- "all emails done" --> CSV["output/results.csv"] --> SH["Google Sheets<br/>(optional)"] --> SUM["Run summary<br/>(webhook response)"]
+    L -- "all emails done" --> CSV["output/results.csv"] --> SH["Google Sheets (optional)<br/>results + needs_review tabs"] --> SUM["Run summary<br/>(webhook response)"]
 ```
 
 ![Workflow in the n8n editor](docs/screenshot-workflow.png)
@@ -42,6 +44,10 @@ flowchart LR
 | spam | – | CSV/Sheets row, no other action |
 
 Missing information is returned as `null`. `need` and `topic` are short summaries of at most 8 words.
+
+**needs_review instead of a forced category.** The model also returns a `confidence` between 0 and 1. If it is below `REVIEW_THRESHOLD` (default 0.7), the email is not put into a category: it gets `category=needs_review` (the model's guess stays in `suggested_category`), a Telegram "Review needed" message, and a row in a separate `needs_review` sheet tab with the email text and an empty `correct_category` column for a person to fill in. Those corrections can be turned into new test cases (see [Corrections from human review](#corrections-from-human-review)).
+
+Categories, fields and their types are defined in [`scripts/schema.json`](scripts/schema.json); the workflow and the evaluation both read it.
 
 **Business rules live in n8n, not in the model.** The model only classifies and extracts. n8n validates the output (category, field keys, types, date and currency formats), drops fields that do not belong to the chosen category, caps `need`/`topic` at 8 words, and decides what happens next (reply draft, Telegram, Sheets). If the output is invalid, n8n asks the model once more with the validation error; if it is still invalid, the email is recorded with `status=error` and the run continues.
 
@@ -95,6 +101,7 @@ Paste the generated value into `N8N_ENCRYPTION_KEY` and set `OLLAMA_MODEL=qwen3.
 | `GEMINI_MODEL` | Gemini only | Gemini model name that supports `generateContent`. |
 | `GEMINI_DELAY_MS` | no | Pause between Gemini calls. Empty = 6500 ms (about 9 requests per minute). |
 | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID` | no | Telegram notifications. If either is empty, notifications are skipped. |
+| `REVIEW_THRESHOLD` | no | Emails with a classification confidence below this go to `needs_review`. Empty = 0.7. |
 | `GOOGLE_SHEET_ID` | no | Target spreadsheet. If empty, the Sheets step is skipped. |
 | `N8N_SHEETS_CREDENTIAL_ID` | no | ID of your Google Sheets credential in n8n (not a secret). See [Google Sheets](#google-sheets-optional). |
 | `N8N_HOST_PORT` | no | Host port for the n8n UI and webhook. Default `5678`. |
@@ -136,6 +143,8 @@ Webhook body parameters (all optional):
 | `dry_run` | `true` skips reply drafts, Telegram and Sheets (used by the evaluation). |
 | `provider` | `ollama` or `gemini` for this run, instead of `AI_PROVIDER`. |
 | `gemini_delay_ms` | Pause between Gemini calls for this run. |
+| `review_threshold` | needs_review threshold for this run (0–1), instead of `REVIEW_THRESHOLD`. |
+| `input` | `corrections` reads `eval/corrections/emails.json` instead of `data/emails.json` (used by the evaluation). |
 
 `npm run demo` runs the first 17 emails with all actions on (reply drafts, Telegram, Sheets if configured) and prints a table. 17 is the smallest number that includes both leads and a high-urgency support email (`e017`); `npm run demo -- --limit 5` runs fewer.
 
@@ -145,16 +154,16 @@ Webhook body parameters (all optional):
 2. Send any message to your bot, then open `https://api.telegram.org/bot<token>/getUpdates` in a browser and copy `message.chat.id` into `TELEGRAM_CHAT_ID`.
 3. `docker compose up -d`.
 
-Leads and high-urgency support emails now send a message (unless `dry_run` is true).
+Leads, high-urgency support emails and `needs_review` emails now send a message (unless `dry_run` is true).
 
 ### Google Sheets (optional)
 
-1. Create a spreadsheet with a tab named **`results`** (leave it empty; the header row is written on the first run with the same columns as the CSV). Put the spreadsheet ID (the part between `/d/` and `/edit` in its URL) into `GOOGLE_SHEET_ID`.
+1. Create a spreadsheet with two empty tabs named **`results`** and **`needs_review`** (the header rows are written on the first run). Put the spreadsheet ID (the part between `/d/` and `/edit` in its URL) into `GOOGLE_SHEET_ID`.
 2. In the n8n editor, create a *Google Sheets OAuth2 API* credential (or a Google service account credential) by following the [n8n Google credentials guide](https://docs.n8n.io/integrations/builtin/credentials/google/).
 3. Open the credential and copy its ID from the browser URL (`.../home/credentials/<ID>`) into `N8N_SHEETS_CREDENTIAL_ID`.
 4. `docker compose up -d` and `npm run workflow:deploy`.
 
-The deploy script links the *Append to Google Sheet* node to that credential. It also keeps any credential you selected on a node in the editor, so a redeploy does not disconnect it. The exported `workflows/inbox-triage.json` never contains credential IDs.
+The deploy script links both Sheets nodes (*Append to Google Sheet* and *Append Needs Review*) to that credential. It also keeps any credential you selected on a node in the editor, so a redeploy does not disconnect it. The exported `workflows/inbox-triage.json` never contains credential IDs.
 
 ### Switching to Gemini
 
@@ -178,19 +187,35 @@ New unread emails then go through the same pipeline. In the node's simple mode t
 <!-- EVAL:START -->
 ### Evaluation results
 
-| Provider | Model | Category accuracy, mean (min–max) | Exact fields | Flexible fields | Prompt injection passed | Avg latency | Eval date |
-|---|---|---|---|---|---|---|---|
-| ollama | `qwen3.5:9b` | 98.3% (98.3%–98.3%) | 95.6% | 73.3% | 12/12 | 1873 ms | 2026-09-29 |
-| gemini | – | Gemini path implemented (AI_PROVIDER=gemini) but not benchmarked. | – | – | – | – | – |
+| Provider | Model | Accuracy, mean (min–max) | Model accuracy without review step | needs_review | Macro F1 | Real leads → spam | Exact fields | Flexible fields | Prompt injection passed | Eval date |
+|---|---|---|---|---|---|---|---|---|---|---|
+| ollama | `qwen3.5:9b` | 98.3% (98.3%–98.3%) | 98.3% | 0.0% | 0.984 | 0/45 | 94.8% | 73.3% | 12/12 | 2026-10-01 |
+| gemini | – | Gemini path implemented (AI_PROVIDER=gemini) but not benchmarked. | – | – | – | – | – | – | – | – |
 
-Flexible match: need/topic count as correct when their word sets (stopwords removed) overlap by Jaccard ≥ 0.5; budget/timeline when the normalized text or the set of numbers in it is equal. Full report: [eval/report.md](eval/report.md).
+**Per category (ollama, 3 runs summed):**
+
+| Category | Precision | Recall | F1 | TP / FP / FN |
+|---|---|---|---|---|
+| lead | 1.000 | 1.000 | 1.000 | 45 / 0 / 0 |
+| support | 1.000 | 1.000 | 1.000 | 45 / 0 / 0 |
+| invoice | 0.938 | 1.000 | 0.968 | 45 / 3 / 0 |
+| spam | 1.000 | 0.933 | 0.966 | 42 / 0 / 3 |
+| **macro avg** |  |  | **0.984** |  |
+
+Real leads that ended up as spam: **0** of 45 lead email-runs. needs_review (confidence < 0.7): 0.0% of email-runs; true categories: lead 0, support 0, invoice 0, spam 0.
+
+Reproducibility: model `qwen3.5:9b` (digest `6488c96fa5fa`), prompt sha256 `40a400654372`, schema sha256 `ab3902f2e76d`.
+
+Accuracy counts needs_review as not correct. "Model accuracy without review step" uses the model's own category for every email (comparable to earlier results). Real leads → spam: lead emails whose final category was spam, over all lead email-runs. Flexible match: need/topic count as correct when their word sets (stopwords removed) overlap by Jaccard ≥ 0.5; budget/timeline when the normalized text or the set of numbers in it is equal. Full report: [eval/report.md](eval/report.md).
 <!-- EVAL:END -->
 
 **Method.**
 
 - **Dataset:** 60 synthetic English emails in `data/emails.json` (15 lead, 15 support, 15 invoice, 15 spam) with expected results in `data/labels.json`. Some emails are tagged as hard cases: `ambiguous` (8), `missing_info` (8), `prompt_injection` (4) and `mixed_language` (4, Turkish/English). The workflow never reads `labels.json`.
 - **Runs:** `npm run eval` triggers the webhook with `{"dry_run": true}` three times and scores each `results.csv`.
-- **Category accuracy** counts `status=error` as wrong.
+- **Accuracy** counts `status=error` and `needs_review` as not correct. **Model accuracy without review step** scores the model's own category (`suggested_category`) for every email; it is comparable to results from before the review step existed.
+- **Precision / recall / F1 per category** are computed on the final decisions, summed over the runs. A `needs_review` decision is not a prediction of any category, so it lowers recall but never precision. **Real leads → spam** counts lead emails whose final category was spam (the most expensive mistake for a sales inbox).
+- **needs_review rate** is the share of email-runs below the threshold; the report lists their true categories and whether the model's guess was right.
 - **Field accuracy** is scored only on emails whose category was right. Both null counts as correct; one null counts as wrong.
 - **Exact fields** (name, company, customer, vendor, invoice_number, currency, urgency, due_date) are compared after trimming, lower-casing and collapsing spaces. `amount` is compared numerically (±0.01).
 - **Flexible fields:**
@@ -204,12 +229,27 @@ To reproduce (Ollama running, n8n up, workflow deployed):
 npm run eval -- --provider ollama --runs 3
 ```
 
-This writes `eval/results/ollama.json`, `eval/report.md`, the per-run CSVs in `eval/runs/` and the table above. The full report has the confusion matrix, per-field and per-tag accuracy and the prompt injection details: [eval/report.md](eval/report.md).
+This writes `eval/results/ollama.json`, `eval/report.md`, the per-run CSVs in `eval/runs/` and the table above. The full report has the confusion matrix, per-category metrics, the needs_review cases, per-field and per-tag accuracy and the prompt injection details: [eval/report.md](eval/report.md).
+
+**Reproducibility.** Every result records the model name, the Ollama version and the model digest, and the SHA-256 of `scripts/prompts/classify-system.txt`, `scripts/schema.json`, `data/emails.json`, `data/labels.json` and the deployed `workflows/inbox-triage.json`. It also checks that the deployed workflow contains exactly the hashed prompt and schema, and notes the git commit (and whether there were uncommitted changes).
+
+### Corrections from human review
+
+When a person fills in `correct_category` in the `needs_review` tab, the cases can become test cases:
+
+```powershell
+npm run corrections -- needs_review.csv    # the tab downloaded as CSV (File > Download > CSV)
+npm run corrections -- --list
+```
+
+They are stored in `eval/corrections/` (same format as `data/`, which never changes) and `npm run eval` scores them as a separate **corrections set** after the benchmark, so the 60-email results stay comparable over time. `eval/corrections/*.json` is git-ignored because it can contain real emails. `npm run corrections -- --id e123 --category lead --subject "..." --text "..."` adds a single case by hand.
 
 ## Limitations
 
 - **Small, synthetic dataset.** 60 emails written for this project. The results say little about real inboxes, other languages or other writing styles.
 - **One systematic category error.** `e020` is a phishing email that looks like an overdue invoice ("open the attachment and enable content"). It is classified as `invoice` in every run instead of `spam`.
+- **The model's confidence does not separate right from wrong (yet).** `qwen3.5:9b` reports about 0.95 for almost every email: mean 0.958 when its category was right and 0.950 when it was wrong (the phishing email `e020` included). At the default threshold of 0.7 no email went to `needs_review` in the benchmark, so the review step does not catch `e020`. The mechanism works (with `"review_threshold": 0.96` 20 of 25 emails went to review), but a useful threshold needs a better confidence signal, e.g. token log-probabilities, a second model that must agree, or a calibrated score on more data.
+- **One field regression with the confidence prompt.** In `e006` the `customer` field became the company ("Driftwood Apps") instead of the person ("Anika Patel"), so exact-field accuracy went from 95.6% to 94.8%. Category accuracy did not change.
 - **Low flexible-field scores.** `need` (46.7%) and `topic` (60.0%) are mostly correct in meaning but worded differently from the labels, and the word-overlap rule does not capture paraphrases. The model also sometimes translates Turkish budget or timeline text into English. These scores measure wording overlap, not whether the summary is useful.
 - **Gemini not benchmarked.** The Gemini path is implemented. A request without an API key was checked (it returns 403 and is recorded as an error without stopping the run), but no accuracy numbers exist for Gemini.
 - **429 backoff untested.** The Gemini retry with backoff has not been exercised against a real rate limit.
@@ -229,7 +269,7 @@ This writes `eval/results/ollama.json`, `eval/report.md`, the per-run CSVs in `e
 
 ```
 ai-inbox-triage/
-├── docker-compose.yml        n8n 2.41.3, data/ and output/ mounted, named volume
+├── docker-compose.yml        n8n 2.41.3, data/, output/ and eval/corrections/ mounted, named volume
 ├── .env.example              all settings, empty secrets
 ├── package.json              npm scripts (no dependencies)
 ├── LICENSE                   MIT
@@ -238,14 +278,16 @@ ai-inbox-triage/
 │   └── labels.json           expected results (used only by the evaluation)
 ├── scripts/
 │   ├── build-workflow.js     workflow source; --deploy imports, publishes and exports it
+│   ├── schema.json           categories, fields, types, needs_review threshold default
 │   ├── prompts/              system prompts for classification and reply drafts
 │   ├── eval.js               npm run eval
+│   ├── add-corrections.js    npm run corrections (needs_review corrections -> test cases)
 │   ├── demo.js               npm run demo
 │   ├── media.js              npm run media (demo video, GIF and screenshots in docs/)
 │   └── lib/env.js            reads non-secret settings from .env
 ├── workflows/
 │   └── inbox-triage.json     exported workflow (no credentials, no instance metadata)
-├── eval/                     results, per-run CSVs, report.md
+├── eval/                     results, per-run CSVs, report.md, corrections/ (git-ignored cases)
 ├── docs/                     demo GIF and screenshots (the MP4 files are git-ignored)
 └── output/                   results.csv (git-ignored)
 ```
